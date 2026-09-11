@@ -278,13 +278,23 @@ export function pulse(
     return Promise.resolve();
   }
   element.dataset.animating = 'true';
-  
+
   // Always reset to scale 1 at the start to prevent accumulation
   element.style.transform = '';
-  
+
+  // Failsafe: the animation below is driven by requestAnimationFrame, which is
+  // frozen while the tab is hidden / backgrounded / in the bfcache. Without this
+  // timer the "animating" latch could stay set forever, making every future
+  // call a no-op (the element then looks permanently unresponsive). This
+  // guarantees the latch and transform are cleared no matter what.
+  const failsafe = window.setTimeout(() => {
+    element.style.transform = '';
+    element.dataset.animating = 'false';
+  }, duration + 300);
+
   // Create half-duration animations for pulse up and down
   const halfDuration = duration / 2;
-  
+
   return animate(
     halfDuration,
     (progress) => {
@@ -292,7 +302,7 @@ export function pulse(
       const currentScale = 1 + (scale - 1) * progress;
       element.style.transform = `scale(${currentScale})`;
     },
-    { 
+    {
       easing: Easing.easeOut,
       onComplete: () => {
         // Scale back down
@@ -302,10 +312,11 @@ export function pulse(
             const currentScale = scale - (scale - 1) * progress;
             element.style.transform = `scale(${currentScale})`;
           },
-          { 
+          {
             easing: Easing.easeIn,
             onComplete: () => {
               // Reset transform and animation state when done
+              window.clearTimeout(failsafe);
               element.style.transform = '';
               element.dataset.animating = 'false';
             }

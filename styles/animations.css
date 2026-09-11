@@ -54,7 +54,32 @@
     position: absolute;
     pointer-events: none;
   }
-  
+
+  /* A bufo image that pops out on click and arcs up/down under (fake) gravity -
+     animated via JS (transform + opacity per frame), so this just sets up the
+     static look; see ClickArea.createEmojiPop(). */
+  .click-emoji-pop {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 36px;
+    height: 36px;
+    margin: -18px 0 0 -18px; /* center on the click point */
+    pointer-events: none;
+    user-select: none;
+    will-change: transform, opacity;
+    z-index: 999;
+    transform-origin: center;
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.25));
+  }
+
+  .click-emoji-pop img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    -webkit-user-drag: none;
+  }
+
   /* Click ripple effect */
   @keyframes ripple {
     0% { 

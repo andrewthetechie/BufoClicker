@@ -1,7 +1,6 @@
 import { Component } from '../core/Component';
 import { ComponentOptions } from '../core/types';
 import { getGameCore } from '../../game/gameCore';
-import { pulse } from '../../utils/animationUtils';
 
 export interface ClickAreaOptions extends ComponentOptions {
   /** Path to bufo image */
@@ -37,8 +36,8 @@ export class ClickArea extends Component {
   private recentClicks: number[] = [];
   /** Timer for clearing clicks */
   private clearClicksTimer: number | null = null;
-  /** Click cooldown flag */
-  private clickCooldown: boolean = false;
+  /** Timer that resets the bufo squish transform */
+  private squishResetTimer: number | null = null;
 
   /**
    * Create a click area component
@@ -84,12 +83,10 @@ export class ClickArea extends Component {
   private handleClick(e: MouseEvent): void {
     e.preventDefault();
 
-    // Prevent click spam with cooldown
-    if (this.clickCooldown) return;
-    this.clickCooldown = true;
-    setTimeout(() => {
-      this.clickCooldown = false;
-    }, 50);
+    // NOTE: no artificial click cooldown here. A previous 50ms gate silently
+    // dropped every click past ~20/sec, and a stuck animation latch could make
+    // clicks appear to stop registering entirely. Real pointer clicks are
+    // already rate-limited by the browser; `getGameCore().click()` is cheap.
 
     // Track click for combo
     this.recentClicks.push(Date.now());
@@ -115,9 +112,21 @@ export class ClickArea extends Component {
    * Create visual effects for click
    */
   private createClickEffects(x: number, y: number, clickResult: ClickResult): void {
-    // Animate bufo image
+    // Squish the bufo via a plain CSS transition (.bufo-image already has
+    // `transition: transform 0.2s ease`). This can never get "stuck" the way a
+    // rAF-driven animation latch could: every click just re-applies the squish
+    // and a single timer clears it back to rest.
     if (this.bufoImage) {
-      pulse(this.bufoImage, 0.95, 100);
+      this.bufoImage.style.transform = 'scale(0.95)';
+      if (this.squishResetTimer !== null) {
+        window.clearTimeout(this.squishResetTimer);
+      }
+      this.squishResetTimer = window.setTimeout(() => {
+        if (this.bufoImage) {
+          this.bufoImage.style.transform = '';
+        }
+        this.squishResetTimer = null;
+      }, 90);
     }
 
     // Create click indicator
@@ -125,6 +134,101 @@ export class ClickArea extends Component {
 
     // Create floating number with wider scatter
     this.createFloatingNumber(x, y, clickResult);
+
+    // Pop a little bufo out alongside the points
+    this.createEmojiPop(x, y);
+  }
+
+  /**
+   * Bufo image pool for the click pop effect - real art pulled from both the
+   * generator icons and the upgrade icons in assets/images (no emoji).
+   */
+  private static readonly BUFO_IMAGES = [
+    // Generators
+    './assets/images/bufo.png',
+    './assets/images/generators/bufo-smol.png',
+    './assets/images/generators/bufo-brain.png',
+    './assets/images/generators/bufo-cash-money.png',
+    './assets/images/generators/bufo-galaxy-brain.png',
+    './assets/images/generators/bufo-has-midas-touch.png',
+    './assets/images/generators/bufo-monstera.png',
+    './assets/images/generators/bufo-old.png',
+    './assets/images/generators/chonky-bufo-wants-to-be-held.png',
+    './assets/images/generators/hypnobufo.png',
+    './assets/images/generators/smol-bufo-feels-blessed.png',
+    // Upgrades
+    './assets/images/upgrades/bufo-dapper.png',
+    './assets/images/upgrades/bufo-drake-yes.png',
+    './assets/images/upgrades/bufo-mindblown.png',
+    './assets/images/upgrades/bufo-simba.png',
+    './assets/images/upgrades/bufo-gives-star.png',
+    './assets/images/upgrades/bufo-give-money.png',
+    './assets/images/upgrades/bufo-chefkiss-with-hat.png',
+    './assets/images/upgrades/bufo-deal-with-it.png',
+    './assets/images/upgrades/bufo-gentleman.png',
+    './assets/images/upgrades/king-bufo.png',
+    './assets/images/upgrades/shut-up-and-take-my-bufo.png',
+    './assets/images/upgrades/bufo-caught-a-small-bufo.png',
+    './assets/images/upgrades/bufo-iron-throne.png',
+    './assets/images/upgrades/bufo-universe.png',
+    './assets/images/upgrades/confused-math-bufo.png'
+  ];
+
+  /**
+   * Spawns a random bufo image at the click point that arcs up and back down
+   * like a ball tossed under gravity, fading out on the way down.
+   */
+  private createEmojiPop(x: number, y: number): void {
+    if (!this.element) return;
+
+    const src = ClickArea.BUFO_IMAGES[Math.floor(Math.random() * ClickArea.BUFO_IMAGES.length)];
+
+    const el = document.createElement('div');
+    el.className = 'click-emoji-pop';
+    el.style.left = `${x}px`;
+    el.style.top = `${y}px`;
+
+    const img = document.createElement('img');
+    img.src = src;
+    img.alt = '';
+    img.draggable = false;
+    // If a specific image ever 404s, just drop the pop instead of showing a
+    // broken-image icon.
+    img.onerror = () => el.remove();
+    el.appendChild(img);
+
+    this.element.appendChild(el);
+
+    const duration = 800 + Math.random() * 200; // ms
+    const peakHeight = 50 + Math.random() * 50; // px risen at the apex
+    const drift = Math.random() * 140 - 70; // px of horizontal wander (~2x spread)
+    const spin = Math.random() * 100 - 50; // deg of tumble over the whole arc
+    const startTime = performance.now();
+
+    const step = (now: number) => {
+      const t = Math.min((now - startTime) / duration, 1);
+
+      // Symmetric parabola: 0 at t=0 and t=1, peak (rising) at t=0.5 - a ball
+      // thrown straight up under gravity and caught back at the same height.
+      const yOffset = -4 * peakHeight * t * (1 - t);
+      const xOffset = drift * t;
+      const rotation = spin * t;
+
+      el.style.transform = `translate(${xOffset}px, ${yOffset}px) rotate(${rotation}deg)`;
+
+      // Only start fading once past the apex, on the way back down.
+      if (t > 0.5) {
+        el.style.opacity = `${1 - (t - 0.5) / 0.5}`;
+      }
+
+      if (t < 1) {
+        requestAnimationFrame(step);
+      } else {
+        el.remove();
+      }
+    };
+
+    requestAnimationFrame(step);
   }
 
   /**
@@ -275,7 +379,7 @@ export class ClickArea extends Component {
    */
   public render(): string {
     return `
-      <img src="${this.imagePath}" alt="Bufo" class="bufo-image">
+      <img src="${this.imagePath}" alt="Bufo" class="bufo-image" draggable="false">
       <div class="click-indicator-container"></div>
     `;
   }
@@ -284,12 +388,16 @@ export class ClickArea extends Component {
    * Clean up resources
    */
   public destroy(): void {
-    // Clear timer
+    // Clear timers
     if (this.clearClicksTimer !== null) {
       clearInterval(this.clearClicksTimer);
       this.clearClicksTimer = null;
     }
-    
+    if (this.squishResetTimer !== null) {
+      clearTimeout(this.squishResetTimer);
+      this.squishResetTimer = null;
+    }
+
     super.destroy();
   }
 }
