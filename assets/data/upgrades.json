@@ -274,7 +274,7 @@
     "flavorText": "An elaborate network of treetop pathways connects your arboreal bufos. It's the Manhattan of the amphibian world!",
     "category": "generator",
     "cost": 14000000,
-    "iconPath": "./assets/images/upgrades/bufo-mostera.png",
+    "iconPath": "./assets/images/upgrades/bufo-monstera.png",
     "effects": [
       {
         "type": "generatorProduction",
@@ -648,7 +648,7 @@
     "flavorText": "A luxurious habitat with filtered water and gourmet flies. Only the most distinguished bufos are allowed entry.",
     "category": "global",
     "cost": 75000000,
-    "iconPath": "./assets/images/upgrades/bufo-gives-money.png",
+    "iconPath": "./assets/images/upgrades/bufo-give-money.png",
     "effects": [
       {
         "type": "globalMultiplier",
@@ -1023,7 +1023,7 @@
       "flavorText": "Your arboreal bufos have created elaborate cities among the branches. Their advanced treehouse technology has revolutionized high-altitude bufo production.",
       "category": "generator",
       "cost": 140000000,
-      "iconPath": "./assets/images/upgrades/bufo-mostera.png",
+      "iconPath": "./assets/images/upgrades/bufo-monstera.png",
       "effects": [
         {
           "type": "generatorProduction",
@@ -1294,6 +1294,159 @@
           "target": "froglet",
           "value": 150
         }
+      ]
+    },
+    {
+      "id": "nebula_bufo_boost_1",
+      "name": "Stellar Nursery",
+      "description": "Increase Nebula Bufo production by 2x",
+      "flavorText": "Newly formed bufos condense out of clouds of interstellar gas and dust, each one radiating a little brighter than the last.",
+      "category": "generator",
+      "cost": 22000000000000,
+      "iconPath": "./assets/images/upgrades/bufo-starstruck.png",
+      "effects": [
+        { "type": "generatorProduction", "target": "nebula_bufo", "multiplier": 2 }
+      ],
+      "unlockConditions": [
+        { "type": "generatorCount", "target": "nebula_bufo", "value": 1 }
+      ]
+    },
+    {
+      "id": "nebula_boost_2",
+      "name": "Supernova Croak",
+      "description": "Increase Nebula Bufo production by 3x",
+      "flavorText": "When a nebula bufo croaks loud enough, entire star systems reorganize themselves in response.",
+      "category": "generator",
+      "cost": 220000000000000,
+      "iconPath": "./assets/images/upgrades/bufo-goes-to-space.png",
+      "effects": [
+        { "type": "generatorProduction", "target": "nebula_bufo", "multiplier": 3 }
+      ],
+      "unlockConditions": [
+        { "type": "generatorCount", "target": "nebula_bufo", "value": 5 }
+      ]
+    },
+    {
+      "id": "quantum_nebula_synergy",
+      "name": "Wavefront Collapse",
+      "description": "Quantum Bufos boost Nebula Bufo production by 2x",
+      "flavorText": "Your quantum bufos have figured out exactly which parallel universe has the best stargazing, and they're sharing the coordinates.",
+      "category": "generator",
+      "cost": 640000000000,
+      "iconPath": "./assets/images/upgrades/bufo-universe.png",
+      "effects": [
+        { "type": "generatorProduction", "target": "nebula_bufo", "multiplier": 2 }
+      ],
+      "unlockConditions": [
+        { "type": "generatorCount", "target": "quantum_bufo", "value": 5 },
+        { "type": "generatorCount", "target": "nebula_bufo", "value": 2 }
+      ]
+    },
+    {
+      "id": "omega_bufo_boost_1",
+      "name": "Final Form",
+      "description": "Increase Omega Bufo production by 2x",
+      "flavorText": "There is nothing left to evolve into. This is simply what a bufo looks like at the end of everything.",
+      "category": "generator",
+      "cost": 290000000000000,
+      "iconPath": "./assets/images/upgrades/bufo-offers-you-the-moon.png",
+      "effects": [
+        { "type": "generatorProduction", "target": "omega_bufo", "multiplier": 2 }
+      ],
+      "unlockConditions": [
+        { "type": "generatorCount", "target": "omega_bufo", "value": 1 }
+      ]
+    },
+    {
+      "id": "omega_boost_2",
+      "name": "Omega Point",
+      "description": "Increase Omega Bufo production by 3x",
+      "flavorText": "All bufo timelines, from every dimension you've unlocked, converge on this single, magnificently productive point.",
+      "category": "generator",
+      "cost": 2900000000000000,
+      "iconPath": "./assets/images/upgrades/bufo-drifts-through-the-void.png",
+      "effects": [
+        { "type": "generatorProduction", "target": "omega_bufo", "multiplier": 3 }
+      ],
+      "unlockConditions": [
+        { "type": "generatorCount", "target": "omega_bufo", "value": 5 }
+      ]
+    },
+    {
+      "id": "nebula_omega_synergy",
+      "name": "Dimensional Starlight",
+      "description": "Nebula Bufos boost Omega Bufo production by 2x",
+      "flavorText": "Starlight from a billion nebulas leaks through the cracks between dimensions, feeding your transdimensional bufos.",
+      "category": "generator",
+      "cost": 8400000000000,
+      "iconPath": "./assets/images/upgrades/bufo-stargazing.png",
+      "effects": [
+        { "type": "generatorProduction", "target": "omega_bufo", "multiplier": 2 }
+      ],
+      "unlockConditions": [
+        { "type": "generatorCount", "target": "nebula_bufo", "value": 5 },
+        { "type": "generatorCount", "target": "omega_bufo", "value": 2 }
+      ]
+    },
+    {
+      "id": "singularity_bufo_boost_1",
+      "name": "Event Horizon",
+      "description": "Increase Singularity Bufo production by 2x",
+      "flavorText": "Past this point, not even bad puns can escape. Production only goes up from here.",
+      "category": "generator",
+      "cost": 3900000000000000,
+      "iconPath": "./assets/images/generators/bufo-increases-his-dimensionality-while-trapped-in-the-void.png",
+      "effects": [
+        { "type": "generatorProduction", "target": "singularity_bufo", "multiplier": 2 }
+      ],
+      "unlockConditions": [
+        { "type": "generatorCount", "target": "singularity_bufo", "value": 1 }
+      ]
+    },
+    {
+      "id": "singularity_boost_2",
+      "name": "Infinite Density",
+      "description": "Increase Singularity Bufo production by 3x",
+      "flavorText": "Your singularity bufos have compressed so much production potential into zero volume that the math has stopped making sense, in a good way.",
+      "category": "generator",
+      "cost": 39000000000000000,
+      "iconPath": "./assets/images/generators/bufo-unlocked-transdimensional-travel-while-in-the-void.png",
+      "effects": [
+        { "type": "generatorProduction", "target": "singularity_bufo", "multiplier": 3 }
+      ],
+      "unlockConditions": [
+        { "type": "generatorCount", "target": "singularity_bufo", "value": 5 }
+      ]
+    },
+    {
+      "id": "omega_singularity_synergy",
+      "name": "Gravitational Collapse",
+      "description": "Omega Bufos boost Singularity Bufo production by 2x",
+      "flavorText": "Your omega bufos willingly collapse into the singularity, adding their infinite potential to its already-infinite density.",
+      "category": "generator",
+      "cost": 112000000000000,
+      "iconPath": "./assets/images/upgrades/bufo-offers-you-the-moon.png",
+      "effects": [
+        { "type": "generatorProduction", "target": "singularity_bufo", "multiplier": 2 }
+      ],
+      "unlockConditions": [
+        { "type": "generatorCount", "target": "omega_bufo", "value": 5 },
+        { "type": "generatorCount", "target": "singularity_bufo", "value": 2 }
+      ]
+    },
+    {
+      "id": "global_production_5",
+      "name": "Cosmic Bufo Order",
+      "description": "Increase all production by 2.5x",
+      "flavorText": "Every bufo, from the humblest tadpole to the densest singularity, now hums in perfect unison. Reality itself takes notice.",
+      "category": "global",
+      "cost": 10000000000000,
+      "iconPath": "./assets/images/upgrades/bufo-universe.png",
+      "effects": [
+        { "type": "globalMultiplier", "multiplier": 2.5 }
+      ],
+      "unlockConditions": [
+        { "type": "totalBufos", "value": 10000000000000 }
       ]
     }
 ]

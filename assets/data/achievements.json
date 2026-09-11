@@ -616,5 +616,62 @@
       "type": "upgradeCount",
       "value": 50
     }
+  },
+  {
+    "id": "nebula_bufo_3",
+    "name": "Nebula Navigator",
+    "description": "Own 3 Nebula Bufos",
+    "flavorText": "Charting the stars from the comfort of a lily pad.",
+    "category": "generators",
+    "order": 21,
+    "requirement": {
+      "type": "generatorType",
+      "target": "nebula_bufo",
+      "value": 3
+    },
+    "reward": {
+      "type": "generatorBoost",
+      "target": "nebula_bufo",
+      "value": 2,
+      "description": "2x Nebula Bufo Production"
+    }
+  },
+  {
+    "id": "omega_bufo_2",
+    "name": "End of the Line",
+    "description": "Own 2 Omega Bufos",
+    "flavorText": "There's nowhere left to go but everywhere at once.",
+    "category": "generators",
+    "order": 22,
+    "requirement": {
+      "type": "generatorType",
+      "target": "omega_bufo",
+      "value": 2
+    },
+    "reward": {
+      "type": "generatorBoost",
+      "target": "omega_bufo",
+      "value": 2,
+      "description": "2x Omega Bufo Production"
+    }
+  },
+  {
+    "id": "singularity_bufo_1",
+    "name": "Beyond the Event Horizon",
+    "description": "Own 1 Singularity Bufo",
+    "flavorText": "You have created a bufo of infinite density. Please handle with care.",
+    "category": "generators",
+    "order": 23,
+    "requirement": {
+      "type": "generatorType",
+      "target": "singularity_bufo",
+      "value": 1
+    },
+    "reward": {
+      "type": "generatorBoost",
+      "target": "singularity_bufo",
+      "value": 2,
+      "description": "2x Singularity Bufo Production"
+    }
   }
 ]
