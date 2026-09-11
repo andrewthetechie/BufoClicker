@@ -12,11 +12,14 @@ export enum GeneratorType {
   Tadpole = 'tadpole',
   Froglet = 'froglet',
   Bufo = 'bufo',
-  GiantToad = 'giant_toad',
-  PoisonDartFrog = 'poison_dart_frog',
-  TreeFrog = 'tree_frog',
-  BulbousFrog = 'bulbous_frog',
-  GoldenFrog = 'golden_frog'
+  GiantBufo = 'giant_bufo',
+  ChromaticBufo = 'chromatic_bufo',
+  CanopyBufo = 'canopy_bufo',
+  ProsperityBufo = 'prosperity_bufo',
+  GoldenBufo = 'golden_bufo',
+  CosmicBufo = 'cosmic_bufo',
+  AncientBufo = 'ancient_bufo',
+  QuantumBufo = 'quantum_bufo'
 }
 
 /**

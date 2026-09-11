@@ -48,18 +48,31 @@ export function roundTo(value: number, decimals: number = 2): number {
 export function formatNumber(value: number, decimals: number = 1): string {
   if (!Number.isFinite(value)) return "0";
   if (value === 0) return "0";
-  
+
   const absValue = Math.abs(value);
-  
+
   if (absValue < 1000) {
-    return roundTo(value, decimals).toLocaleString();
+    // en-US so thousands are grouped with commas (1,000) not periods (1.000),
+    // regardless of the runtime/browser locale.
+    return roundTo(value, decimals).toLocaleString('en-US');
   }
-  
+
+  // Keep the full, comma-grouped number readable for a good while before
+  // switching to K/M/B/T abbreviations.
+  if (absValue < 1_000_000) {
+    return Math.round(value).toLocaleString('en-US');
+  }
+
   const suffixes = ["", "K", "M", "B", "T", "Qa", "Qi", "Sx", "Sp", "Oc", "No", "Dc"];
   const exponent = Math.min(Math.floor(Math.log10(absValue) / 3), suffixes.length - 1);
   const scaled = value / Math.pow(10, exponent * 3);
-  
-  return `${roundTo(scaled, decimals)}${suffixes[exponent]}`;
+  // Once we're past the largest named suffix (Decillion), `scaled` itself can
+  // still be astronomically large (unbounded exponential costs at very high
+  // owned counts). Cap it so we never fall back to JS's scientific notation
+  // (".toLocaleString"/template coercion switches to it past ~1e21).
+  const displayScaled = Math.min(scaled, 999_999);
+
+  return `${displayScaled.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}${suffixes[exponent]}${scaled > displayScaled ? '+' : ''}`;
 }
 
 /**
@@ -77,21 +90,23 @@ export function formatNumber(value: number, decimals: number = 1): string {
 export function formatNumberWithPrecision(value: number): string {
   if (!Number.isFinite(value)) return "0";
   if (value === 0) return "0";
-  
+
   const absValue = Math.abs(value);
-  
-  if (absValue < 1000) {
-    return Math.floor(value).toLocaleString();
+
+  // Show the whole number with comma thousands separators (en-US) until it gets
+  // genuinely unwieldy. This is the primary bufo counter: 1000 reads as "1,000".
+  if (absValue < 1_000_000_000_000) {
+    return Math.round(value).toLocaleString('en-US');
   }
-  
+
   const suffixes = ["", "K", "M", "B", "T", "Qa", "Qi", "Sx", "Sp", "Oc", "No", "Dc"];
   const exponent = Math.min(Math.floor(Math.log10(absValue) / 3), suffixes.length - 1);
   const scaled = value / Math.pow(10, exponent * 3);
-  
-  // Always use exactly 3 decimal places with toFixed to force showing trailing zeros
-  const formattedNumber = roundTo(scaled, 3).toFixed(3);
-  
-  return `${formattedNumber}`;
+  // See formatNumber() - clamp so absurd magnitudes never render as "1e+271".
+  const displayScaled = Math.min(scaled, 999_999);
+
+  // 3 decimal places, and DO include the magnitude suffix (e.g. "1.234T").
+  return `${displayScaled.toLocaleString('en-US', { minimumFractionDigits: 3, maximumFractionDigits: 3 })}${suffixes[exponent]}${scaled > displayScaled ? '+' : ''}`;
 }
 /**
  * Returns the full word for a number suffix

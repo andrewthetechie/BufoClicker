@@ -69,7 +69,7 @@ export async function loadGameData(): Promise<GameLoadingStatus> {
       const loadAchievements = initializeAchievements()
       .then(achievements => {
         loadingStatus.achievements = true;
-        Logger.log(`Loaded ${achievements.length} upgrades`);
+        Logger.log(`Loaded ${achievements.length} achievements`);
         return achievements;
       })
       .catch(error => {

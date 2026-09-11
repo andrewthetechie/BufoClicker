@@ -130,14 +130,18 @@ export class ResourceDisplay extends Component {
   private updateBufoCount(bufos: number): void {
     if (!this.bufoCountElement) return;
 
-    // Format the number with 3 significant digits
+    // Whole, comma-grouped number while it fits; abbreviated (1.234T) once huge.
     const formattedNumber = formatNumberWithPrecision(Math.floor(bufos));
-    const fullName = getNumberFullName(Math.floor(bufos));
-    
-    // Create HTML structure with the number on top and the full name + "bufos" below
+    // Only add the magnitude word ("Trillion", ...) when the number is actually
+    // abbreviated - otherwise "1,234,567" + "Million Bufos" reads as nonsense.
+    const fullName = Math.abs(bufos) >= 1_000_000_000_000
+      ? getNumberFullName(Math.floor(bufos))
+      : '';
+
+    // Create HTML structure with the number on top and the label below
     this.bufoCountElement.innerHTML = `
       <span class="number-value">${formattedNumber}</span>
-      <span class="number-label">${fullName} Bufos</span>
+      <span class="number-label">${fullName ? fullName + ' ' : ''}Bufos</span>
     `;
 
     // Animate if there was a significant change
