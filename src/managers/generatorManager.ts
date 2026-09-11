@@ -20,6 +20,8 @@ import {
   GENERATOR_UNLOCKED,
   GENERATOR_PRODUCTION_UPDATED
 } from '../core/eventTypes';
+import { getPrestigeMultiplier } from '../models/prestige';
+import { getBossMultiplier } from '../models/boss';
 
 /**
  * Interface for generator contribution to production
@@ -70,9 +72,14 @@ export class GeneratorManager {
     const generator = state.generators[generatorType];
     
     if (!generator) return generator;
-    
-    // Get global multiplier from state
-    const globalMultiplier = state.resources.productionMultiplier;
+
+    // Global multiplier = upgrade globals * permanent prestige boost * permanent
+    // boss-defeat boost * temporary Golden Bufo "Bufo Frenzy".
+    const globalMultiplier =
+      state.resources.productionMultiplier *
+      getPrestigeMultiplier(state) *
+      getBossMultiplier(state) *
+      (state.resources.frenzyProductionMultiplier ?? 1);
     
     // Calculate boosts from state (would need to be added to state model)
     // For now, using empty arrays as placeholders

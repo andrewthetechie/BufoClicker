@@ -2,6 +2,9 @@ import { getGeneratorManager, GeneratorManager } from './generatorManager';
 import { getExplorerManager, ExplorerManager } from './explorerManager';
 import { getUpgradeManager, UpgradeManager } from './upgradeManager';
 import { getAchievementManager, AchievementManager } from './achievementManager';
+import { getPrestigeManager, PrestigeManager } from './prestigeManager';
+import { getGoldenBufoManager, GoldenBufoManager } from './goldenBufoManager';
+import { getBossManager, BossManager } from './bossManager';
 import { INITIAL_UPGRADES } from '../models/upgrades';
 import { INITIAL_GENERATORS } from '../models/generators';
 import { INITIAL_ACHIEVEMENTS } from '../models/achievements';
@@ -19,6 +22,9 @@ export function initializeManagers(): void {
   const explorerManager = getExplorerManager();
   const upgradeManager = getUpgradeManager();
   const achievementManager = getAchievementManager();
+  const prestigeManager = getPrestigeManager();
+  const goldenBufoManager = getGoldenBufoManager();
+  const bossManager = getBossManager();
   
   // Log data status
   Logger.debug(`Available generators: ${Object.keys(INITIAL_GENERATORS).length}`);
@@ -55,6 +61,9 @@ export function resetManagers(): void {
   getExplorerManager().reset();
   getUpgradeManager().reset();
   getAchievementManager().reset();
+  getPrestigeManager().reset();
+  getGoldenBufoManager().reset();
+  getBossManager().reset();
 }
 
 // Export all managers
@@ -66,5 +75,11 @@ export {
   getUpgradeManager,
   UpgradeManager,
   getAchievementManager,
-  AchievementManager
+  AchievementManager,
+  getPrestigeManager,
+  PrestigeManager,
+  getGoldenBufoManager,
+  GoldenBufoManager,
+  getBossManager,
+  BossManager
 };

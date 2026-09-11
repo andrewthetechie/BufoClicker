@@ -1,6 +1,8 @@
 import { GameState, PartialGameState } from '../core/types';
 import { DEFAULT_EXPLORER_DATA } from '../models/explorer';
 import { INITIAL_GENERATORS, GeneratorType, GeneratorData } from '../models/generators';
+import { DEFAULT_PRESTIGE_STATE, getPrestigeMultiplier } from '../models/prestige';
+import { getBossMultiplier } from '../models/boss';
 import * as Logger from './logger';
 
 /**
@@ -55,6 +57,25 @@ export function updateState(currentState: GameState, updates: PartialGameState):
     };
   }
 
+  // Update prestige
+  if (updates.prestige) {
+    newState.prestige = {
+      ...(newState.prestige ?? { points: 0, lifetimePoints: 0, transcendences: 0 }),
+      ...updates.prestige
+    };
+  }
+
+  // Update bosses
+  if (updates.bosses) {
+    newState.bosses = {
+      ...(newState.bosses ?? { defeated: [] }),
+      ...updates.bosses,
+      defeated: updates.bosses.defeated
+        ? [...updates.bosses.defeated]
+        : [...(newState.bosses?.defeated ?? [])]
+    };
+  }
+
   // Update achievements
   if (updates.achievements) {
     newState.achievements = {
@@ -104,7 +125,9 @@ export function createDefaultState(): GameState {
       baseClickPower: 1,
       clickPower: 1,
       clickMultiplier: 1, // Add clickMultiplier property
-      productionMultiplier: 1
+      productionMultiplier: 1,
+      frenzyProductionMultiplier: 1,
+      frenzyClickMultiplier: 1
     },
     // Use available data or create a fallback empty object if no generators are loaded
     generators: hasGeneratorsData 
@@ -126,7 +149,9 @@ export function createDefaultState(): GameState {
       lastSaved: Date.now(),
       autoSave: true,
       version: '1.0.0'
-    }
+    },
+    prestige: { ...DEFAULT_PRESTIGE_STATE },
+    bosses: { defeated: [] }
   };
 }
 
@@ -136,9 +161,18 @@ export function createDefaultState(): GameState {
  * @returns Updated game state with derived values
  */
 export function calculateDerivedState(state: GameState): GameState {
-  // Calculate click power based on base power and click multiplier
-  const clickPower = state.resources.baseClickPower * state.resources.clickMultiplier;
-  
+  // Click power = base * click upgrades * permanent prestige boost * temporary
+  // Golden Bufo "Click Frenzy".
+  const prestigeMult = getPrestigeMultiplier(state);
+  const bossMult = getBossMultiplier(state);
+  const frenzyClick = state.resources.frenzyClickMultiplier ?? 1;
+  const clickPower =
+    state.resources.baseClickPower *
+    state.resources.clickMultiplier *
+    prestigeMult *
+    bossMult *
+    frenzyClick;
+
   return {
     ...state,
     resources: {

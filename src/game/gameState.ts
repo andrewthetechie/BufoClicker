@@ -1,6 +1,8 @@
 import { GameState, PartialGameState } from '../core/types';
 import { INITIAL_GENERATORS, GeneratorType, GeneratorData } from '../models/generators';
 import { DEFAULT_EXPLORER_DATA } from '../models/explorer';
+import { DEFAULT_PRESTIGE_STATE, getPrestigeMultiplier } from '../models/prestige';
+import { getBossMultiplier } from '../models/boss';
 
 /**
  * Default initial game state
@@ -13,6 +15,8 @@ export const DEFAULT_GAME_STATE: GameState = {
     clickPower: 1,
     clickMultiplier: 1,  // Initialize click multiplier
     productionMultiplier: 1,  // This now only affects generators
+    frenzyProductionMultiplier: 1,
+    frenzyClickMultiplier: 1,
     clickCount: 0  // Initialize click count
   },
   generators: INITIAL_GENERATORS,
@@ -32,7 +36,9 @@ export const DEFAULT_GAME_STATE: GameState = {
     lastSaved: Date.now(),
     autoSave: true,
     version: '1.0.0'
-  }
+  },
+  prestige: { ...DEFAULT_PRESTIGE_STATE },
+  bosses: { defeated: [] }
 };
 
 /**
@@ -41,9 +47,17 @@ export const DEFAULT_GAME_STATE: GameState = {
  * @returns Updated game state with derived values
  */
 export function calculateDerivedState(state: GameState): GameState {
-  // Calculate click power based on base power and click multiplier
-  const clickPower = state.resources.baseClickPower * state.resources.clickMultiplier;
-  
+  // base * click upgrades * permanent prestige boost * temporary Click Frenzy
+  const prestigeMult = getPrestigeMultiplier(state);
+  const bossMult = getBossMultiplier(state);
+  const frenzyClick = state.resources.frenzyClickMultiplier ?? 1;
+  const clickPower =
+    state.resources.baseClickPower *
+    state.resources.clickMultiplier *
+    prestigeMult *
+    bossMult *
+    frenzyClick;
+
   return {
     ...state,
     resources: {
@@ -121,6 +135,25 @@ export function updateState(currentState: GameState, updates: PartialGameState):
     newState.gameSettings = {
       ...newState.gameSettings,
       ...updates.gameSettings
+    };
+  }
+
+  // Update prestige
+  if (updates.prestige) {
+    newState.prestige = {
+      ...(newState.prestige ?? { points: 0, lifetimePoints: 0, transcendences: 0 }),
+      ...updates.prestige
+    };
+  }
+
+  // Update bosses
+  if (updates.bosses) {
+    newState.bosses = {
+      ...(newState.bosses ?? { defeated: [] }),
+      ...updates.bosses,
+      defeated: updates.bosses.defeated
+        ? [...updates.bosses.defeated]
+        : [...(newState.bosses?.defeated ?? [])]
     };
   }
 

@@ -76,9 +76,16 @@
   @import './achievements.css';
   @import './productionStats.css';
   @import './statsModal.css';
+  @import './prestige.css';
+  @import './goldenBufo.css';
+  @import './bosses.css';
   /* Global styles */
   body {
-    background-image: url('./../assets/images/background/pond.jpg');
+    /* The actual background image lives on ::before (see bosses.css) so a
+       per-boss-stage `filter` can re-tint the world without washing out the
+       UI panels sitting on top of it. */
+    position: relative;
+    min-height: 100vh;
     font-family: var(--font-family);
     font-size: var(--font-size-md);
     color: var(--color-text);
@@ -90,6 +97,14 @@
     font-family: inherit;
     border: none;
     outline: none;
+    /* Fast repeated clicking (boss fights, the main bufo, Golden Bufo) was
+       triggering the browser's native text/image selection drag. No button
+       in this game needs its label selectable. */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-user-drag: none;
   }
   
   a {

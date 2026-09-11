@@ -193,6 +193,20 @@ export function loadGame(): boolean {
     const clickCount = saveData.state.resources?.clickCount || saveData.state.achievements?.clickCount || 0;
     
     // Reconstruct the proper GameState structure
+    // Prestige progression is permanent — carry it straight through from the save.
+    const savedPrestige = (saveData.state as any).prestige || {};
+    const prestigeState = {
+      points: savedPrestige.points || 0,
+      lifetimePoints: savedPrestige.lifetimePoints || savedPrestige.points || 0,
+      transcendences: savedPrestige.transcendences || 0
+    };
+
+    // Defeated bosses are permanent, like prestige.
+    const savedBosses = (saveData.state as any).bosses || {};
+    const bossState = {
+      defeated: Array.isArray(savedBosses.defeated) ? savedBosses.defeated : []
+    };
+
     const properState = {
       resources: {
         bufos: saveData.state.resources.bufos || 0,
@@ -202,6 +216,9 @@ export function loadGame(): boolean {
         // Reset multipliers to 1 to avoid double-applying effects
         clickMultiplier: 1,
         productionMultiplier: 1,
+        // Golden Bufo frenzies are transient and never persist across a reload
+        frenzyProductionMultiplier: 1,
+        frenzyClickMultiplier: 1,
         clickCount: clickCount // Preserve click count
       },
       generators: saveData.state.generators || {},
@@ -218,7 +235,9 @@ export function loadGame(): boolean {
         autoSave: gameSettings.autoSave ?? true,
         version: gameSettings.version || '1.0.0',
         firstStartTime: firstStartTime // Preserve first start time
-      }
+      },
+      prestige: prestigeState,
+      bosses: bossState
     };
     
     // Load state into state manager

@@ -6,6 +6,9 @@ import { getUIManager } from '../managers/UIManager';
 import { getGeneratorManager } from '../managers/generatorManager';
 import { getUpgradeManager } from '../managers/upgradeManager';
 import { getExplorerManager } from '../managers/explorerManager';
+import { getPrestigeManager } from '../managers/prestigeManager';
+import { getGoldenBufoManager } from '../managers/goldenBufoManager';
+import { getBossManager } from '../managers/bossManager';
 import { exportSave, importSave, saveGame, loadGame } from '../game/gameSave';
 import * as Logger from './logger';
 
@@ -27,6 +30,44 @@ export const ui = getUIManager();
 export const generators = getGeneratorManager();
 export const upgrades = getUpgradeManager();
 export const explorer = getExplorerManager();
+export const prestige = getPrestigeManager();
+
+// Golden Bufo helpers
+export const golden = {
+  spawn: () => {
+    getGoldenBufoManager().forceSpawn();
+    return 'Golden Bufo spawned (or already on screen)';
+  },
+  collect: () => {
+    const reward = getGoldenBufoManager().collect();
+    return reward ? `Collected: ${reward.label} - ${reward.detail}` : 'No Golden Bufo on screen';
+  }
+};
+
+// Clicker Boss helpers
+export const boss = {
+  available: () => getBossManager().getAvailableBoss(),
+  start: () => (getBossManager().startFight() ? 'Fight started' : 'No boss available (or one is already active)'),
+  hit: (amount?: number) => {
+    const clickPower = state.getState().resources.clickPower;
+    return getBossManager().hit(amount ?? clickPower);
+  },
+  win: () => {
+    const fight = getBossManager().getActiveFight();
+    return fight ? getBossManager().hit(fight.health) : 'No active fight';
+  },
+  lose: () => {
+    // Debug-only: force a loss by draining the timer via repeated small ticks.
+    const fight = getBossManager().getActiveFight();
+    if (!fight) return 'No active fight';
+    getBossManager().retreat();
+    state.setState({ resources: { bufos: 0 } });
+    return 'Simulated a loss (bufos zeroed, fight cleared)';
+  },
+  status: () => getBossManager().getActiveFight(),
+  multiplier: () => getBossManager().getMultiplier(),
+  defeatedCount: () => getBossManager().getDefeatedCount()
+};
 
 // Save/load helpers
 export const save = {
@@ -231,7 +272,10 @@ export function help() {
   console.log('- upgrades: Upgrade manager access');
   console.log('- upgrade_debug: Upgrade debugging tools');
   console.log('- explorer: Explorer manager access');
-  
+  console.log('- prestige: Prestige/Transcendence manager access');
+  console.log('- golden.spawn() / golden.collect(): trigger & collect a Golden Bufo now');
+  console.log('- boss.available() / boss.start() / boss.hit() / boss.win(): Clicker Boss fights');
+
   console.groupEnd();
   
   return "Debug tools help displayed in console";
@@ -250,6 +294,9 @@ export default {
   generators,
   upgrades,
   explorer,
+  prestige,
+  golden,
+  boss,
   save,
   time,
   resources,

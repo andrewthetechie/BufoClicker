@@ -5,6 +5,9 @@ import { GeneratorManager, getGeneratorManager } from '../managers/generatorMana
 import { UpgradeManager, getUpgradeManager } from '../managers/upgradeManager';
 import { ExplorerManager, getExplorerManager } from '../managers/explorerManager';
 import { AchievementManager, getAchievementManager } from '../managers/achievementManager'; // Import AchievementManager
+import { PrestigeManager, getPrestigeManager } from '../managers/prestigeManager';
+import { GoldenBufoManager, getGoldenBufoManager } from '../managers/goldenBufoManager';
+import { BossManager, getBossManager } from '../managers/bossManager';
 import { GeneratorType, GeneratorData } from '../models/generators';
 import { AchievementCategory} from '../models/achievements';
 import { Upgrade } from '../models/upgrades';
@@ -74,6 +77,12 @@ export class GameCore {
   private explorerManager: ExplorerManager;
   /** Achievement manager instance */
   private achievementManager: AchievementManager;
+  /** Prestige manager instance */
+  private prestigeManager: PrestigeManager;
+  /** Golden Bufo random-event manager instance */
+  private goldenBufoManager: GoldenBufoManager;
+  /** Clicker Boss manager instance */
+  private bossManager: BossManager;
   /** Is the game currently running */
   private isRunning: boolean = false;
   /** Auto-save enabled flag */
@@ -99,6 +108,9 @@ export class GameCore {
     this.upgradeManager = getUpgradeManager();
     this.explorerManager = getExplorerManager();
     this.achievementManager = getAchievementManager(); // Initialize achievement manager
+    this.prestigeManager = getPrestigeManager();
+    this.goldenBufoManager = getGoldenBufoManager();
+    this.bossManager = getBossManager();
 
     // Register event handlers
     this.registerManagerEvents();
@@ -190,10 +202,14 @@ public init(): void {
     if (this.isRunning) return;
     
     this.isRunning = true;
-    
+
+    // Golden Bufos only appear while the game is actively running
+    this.goldenBufoManager.start();
+    this.bossManager.resume();
+
     // Emit event that game has started
     getEventBus().emit(GAME_STARTED);
-    
+
     Logger.log('Game started');
   }
 
@@ -204,10 +220,15 @@ public init(): void {
     if (!this.isRunning) return;
     
     this.isRunning = false;
-    
+
+    this.goldenBufoManager.stop();
+    // Pause (not end) any active boss fight - the countdown must never run
+    // while the player isn't even looking at the tab.
+    this.bossManager.pause();
+
     // Emit event that game has paused
     getEventBus().emit(GAME_PAUSED);
-    
+
     Logger.log('Game paused');
   }
 
@@ -227,6 +248,9 @@ public resetState(): void {
   this.upgradeManager.reset();
   this.explorerManager.reset();
   this.achievementManager.reset(); // Reset achievement manager
+  this.prestigeManager.reset();
+  this.goldenBufoManager.reset();
+  this.bossManager.reset();
   
   // Reset click tracking
   this.clickCount = 0;
@@ -662,6 +686,27 @@ public click(): {
    */
   public getAchievementManager(): AchievementManager {
     return this.achievementManager;
+  }
+
+  /**
+   * Get the prestige manager
+   */
+  public getPrestigeManager(): PrestigeManager {
+    return this.prestigeManager;
+  }
+
+  /**
+   * Get the Golden Bufo manager
+   */
+  public getGoldenBufoManager(): GoldenBufoManager {
+    return this.goldenBufoManager;
+  }
+
+  /**
+   * Get the Clicker Boss manager
+   */
+  public getBossManager(): BossManager {
+    return this.bossManager;
   }
 }
 

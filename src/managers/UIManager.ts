@@ -10,6 +10,9 @@ import { GeneratorList } from '../ui/components/generatorList';
 import { Shop } from '../ui/components/shop';
 import { UpgradeList } from '../ui/components/upgradeList';
 import { ProductionStats } from '../ui/components/productionStats';
+import { GoldenBufo } from '../ui/components/goldenBufo';
+import { BossFight } from '../ui/components/bossFight';
+import { GAME_TICK, PRESTIGE_TRANSCENDED } from '../core/eventTypes';
 import { saveGame } from '../game/gameSave';
 import { getSaveManager } from '../utils/saveManager';
 import { Achievement,AchievementCategory, getCategoryIcon, RewardType } from '../models/achievements';
@@ -186,6 +189,7 @@ private createBaseStructure(): void {
           <div id="game-menu" class="game-menu">
             <button id="stats-button" class="menu-button">Stats</button>
             <button id="achievements-button" class="menu-button">Achievements</button>
+            <button id="transcend-button" class="menu-button menu-button--prestige" hidden>Transcend</button>
             <button id="save-button" class="menu-button">Save</button>
             <button id="reset-button" class="menu-button">Reset</button>
           </div>
@@ -272,7 +276,9 @@ private createAchievementNotificationContainer(): void {
     const shop = new Shop();
     const upgradeList = new UpgradeList();
     const productionStats = new ProductionStats(); // New component
-    
+    const goldenBufo = new GoldenBufo(); // Roaming Golden Bufo + reward toast
+    const bossFight = new BossFight(); // Clicker Boss banner + fight overlay
+
     // Initialize all components
     resourceDisplay.init();
     clickArea.init();
@@ -280,6 +286,8 @@ private createAchievementNotificationContainer(): void {
     shop.init();
     upgradeList.init();
     productionStats.init();
+    goldenBufo.init();
+    bossFight.init();
 
     const gameCore = getGameCore();
     gameCore.checkUnlocks();
@@ -290,6 +298,8 @@ private createAchievementNotificationContainer(): void {
     this.components.set('shop', shop);
     this.components.set('upgradeList', upgradeList);
     this.components.set('productionStats', productionStats);
+    this.components.set('goldenBufo', goldenBufo as unknown as Component);
+    this.components.set('bossFight', bossFight as unknown as Component);
   }
   
   /**
@@ -414,25 +424,131 @@ public initializeMenu(): void {
   // Find buttons
   const statsButton = document.getElementById('stats-button');
   const achievementsButton = document.getElementById('achievements-button');
+  const transcendButton = document.getElementById('transcend-button');
   const saveButton = document.getElementById('save-button');
   const resetButton = document.getElementById('reset-button');
-  
+
   // Add event listeners
   if (statsButton) {
     statsButton.addEventListener('click', this.showStatsModal.bind(this));
   }
-  
+
   if (achievementsButton) {
     achievementsButton.addEventListener('click', this.showAchievementsModal.bind(this));
   }
-  
+
+  if (transcendButton) {
+    transcendButton.addEventListener('click', this.showPrestigeModal.bind(this));
+  }
+
   if (saveButton) {
     saveButton.addEventListener('click', this.handleSave.bind(this));
   }
-  
+
   if (resetButton) {
     resetButton.addEventListener('click', this.handleReset.bind(this));
   }
+
+  // Keep the Transcend button's visibility / label in sync with progress.
+  const bus = getEventBus();
+  bus.on(GAME_TICK, () => this.refreshTranscendButton());
+  bus.on(PRESTIGE_TRANSCENDED, (data: { gained: number; multiplier: number }) => {
+    this.closeModal();
+    this.showNotification({
+      message:
+        `Transcended! +${data.gained} Bufoplier point${data.gained === 1 ? '' : 's'} ` +
+        `— all bufo output is now x${data.multiplier.toFixed(2)} forever.`,
+      type: 'success',
+      duration: 6000
+    });
+  });
+  this.refreshTranscendButton();
+}
+
+/**
+ * Show/hide and label the Transcend button based on pending Bufoplier points.
+ */
+private refreshTranscendButton(): void {
+  const button = document.getElementById('transcend-button');
+  if (!button) return;
+
+  const prestige = getGameCore().getPrestigeManager();
+  const pending = prestige.getPendingPoints();
+  const lifetime = prestige.getState().lifetimePoints;
+
+  if (pending >= 1 || lifetime > 0) {
+    button.hidden = false;
+    button.textContent = pending >= 1 ? `Transcend (+${pending})` : 'Transcend';
+    button.classList.toggle('is-ready', pending >= 1);
+  } else {
+    button.hidden = true;
+  }
+}
+
+/**
+ * Prestige / "Transcendence Bufoplier" modal.
+ */
+private showPrestigeModal(): void {
+  const prestige = getGameCore().getPrestigeManager();
+  const pending = prestige.getPendingPoints();
+  const state = prestige.getState();
+  const currentMult = prestige.getMultiplier();
+  const nextMult = 1 + (state.lifetimePoints + pending) * prestige.getBonusPerPoint();
+  const bonusPct = Math.round(prestige.getBonusPerPoint() * 100);
+
+  const content = `
+    <div class="prestige-modal">
+      <p class="prestige-modal__blurb">
+        Transcend to fold this run into the <strong>Transcendence Bufoplier</strong>.
+        Your bufos, generators and upgrades reset, but every Bufoplier point
+        permanently multiplies <em>all</em> bufo production and click power by
+        +${bonusPct}%.
+      </p>
+      <div class="prestige-modal__stats">
+        <div><span>Bufoplier points</span><strong>${state.lifetimePoints}</strong></div>
+        <div><span>Times transcended</span><strong>${state.transcendences}</strong></div>
+        <div><span>Current multiplier</span><strong>x${currentMult.toFixed(2)}</strong></div>
+        <div class="is-gain"><span>Points if you transcend now</span><strong>+${pending}</strong></div>
+        <div class="is-gain"><span>New multiplier</span><strong>x${nextMult.toFixed(2)}</strong></div>
+      </div>
+      ${pending < 1
+        ? `<p class="prestige-modal__locked">Reach ${formatNumber(prestige.getMinTotalBufos())} total bufos this run to earn your first point.</p>`
+        : ''}
+    </div>
+  `;
+
+  const buttons: NonNullable<ModalOptions['buttons']> = [
+    {
+      text: 'Not yet',
+      callback: () => this.closeModal(),
+      className: 'modal-button cancel-button'
+    }
+  ];
+
+  if (pending >= 1) {
+    buttons.push({
+      text: `Transcend for +${pending}`,
+      callback: () => this.handleTranscend(),
+      className: 'modal-button confirm-button'
+    });
+  }
+
+  this.showModal({
+    id: 'prestige-modal',
+    title: 'Transcendence Bufoplier',
+    content,
+    buttons,
+    closeOnBackdrop: true
+  });
+}
+
+private handleTranscend(): void {
+  const gained = getGameCore().getPrestigeManager().transcend();
+  if (gained > 0) {
+    // Persist the fresh post-transcend state immediately.
+    saveGame();
+  }
+  this.closeModal();
 }
 
 /**
@@ -758,7 +874,7 @@ private showStatsModal(): void {
         </div>
         <div class="stat-item">
           <div class="stat-label">Total Clicks</div>
-          <div class="stat-value">${totalClicks.toLocaleString()}</div>
+          <div class="stat-value">${totalClicks.toLocaleString('en-US')}</div>
         </div>
       </div>
       

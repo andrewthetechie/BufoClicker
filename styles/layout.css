@@ -66,6 +66,11 @@
   border: 1px solid #c8e6c9;
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
   transition: all 0.2s ease;
+  /* Rapid clicking was dragging-to-select the page around the bufo. */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
   z-index: 1; /* Ensure it's clickable */
 }
 
@@ -79,6 +84,8 @@
   min-height: 250px;
   max-height: 400px;
   transition: transform 0.2s ease;
+  -webkit-user-drag: none;
+  user-select: none;
 }
 
 .owned-generator {
