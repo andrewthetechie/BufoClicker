@@ -93,8 +93,8 @@ export class UpgradeItem extends Component {
     event.preventDefault();
     event.stopPropagation();
     
-    if (!this.upgrade || !this.canAfford) return;
-    
+    if (!this.upgrade) return;
+
     const currentBufos = getStateManager().getState().resources.bufos;
     
     // Get upgrade manager from GameCore

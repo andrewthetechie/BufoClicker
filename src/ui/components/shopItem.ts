@@ -105,22 +105,25 @@ protected setup(): void {
    */
   private handlePurchase(e: MouseEvent): void {
     e.stopPropagation(); // Prevent event bubbling
-    
-    if (!this.generator || !this.canAfford) return;
-    
+
+    if (!this.generator) return;
+
     // Get generator manager from gameCore
     const generatorManager = getGameCore().getGeneratorManager();
     const state = getStateManager().getState();
-    
-    // Attempt to purchase
+
+    // Attempt to purchase. We deliberately let the manager be the single source
+    // of truth here (instead of bailing out early on `!this.canAfford`) so that
+    // an unaffordable click still produces visible feedback instead of silently
+    // doing nothing (issue #1).
     const result = generatorManager.purchaseGenerator(
       this.generator.id,
       this.purchaseAmount,
       state.resources.bufos
     );
-    
+
     const success = result.success;
-    
+
     if (success) {
       // Visual feedback for successful purchase
       if (this.element) {
@@ -141,15 +144,16 @@ protected setup(): void {
       // Update the current cost display
       this.updateDisplay();
     } else {
-      // Visual feedback for failed purchase
+      // Visual feedback for failed purchase (e.g. not enough bufos). Without
+      // this an unaffordable click would look like the button is broken.
       if (this.element) {
         this.element.classList.add('purchase-error');
-        
+
         // Shake animation for error
         if (this.buyButton) {
           shake(this.buyButton, 5, 500);
         }
-        
+
         setTimeout(() => {
           this.element?.classList.remove('purchase-error');
         }, 300);
@@ -417,14 +421,17 @@ public update(data: ShopItemUpdateData): void {
   
   // Update button text and state
   if (this.buyButton) {
+    // Keep the button styled as (un)affordable, but never set the native
+    // `disabled` property: a disabled button swallows click events, which made
+    // an unaffordable buy button look completely dead (issue #1). It stays
+    // clickable and the purchase handler shows feedback when you can't afford it.
     if (this.canAfford) {
       this.buyButton.classList.remove('disabled');
-      this.buyButton.disabled = false;
     } else {
       this.buyButton.classList.add('disabled');
-      this.buyButton.disabled = true;
     }
-    
+    this.buyButton.disabled = false;
+
     // Update button text based on purchase amount
     this.updateButtonCost();
   }

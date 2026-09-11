@@ -6,7 +6,13 @@ import { loadGame, saveGame } from './game/gameSave';
 import { getUIManager } from './managers/UIManager';
 import { initializeManagers } from './managers';
 import * as Logger from './utils/logger';
-import { GAME_STARTED, GAME_LOADED, GAME_TICK } from './core/eventTypes';
+import {
+  GAME_STARTED,
+  GAME_LOADED,
+  GAME_TICK,
+  GENERATOR_PURCHASED,
+  UPGRADE_PURCHASED
+} from './core/eventTypes';
 import { loadGameData, isGameDataLoaded, verifyGameData } from './game/gameLoader';
 
 /**
@@ -155,12 +161,24 @@ export async function initializeGame(
 function setupGlobalEvents(): void {
   const eventBus = getEventBus();
   
+  // Helper: persist the game, swallowing any error so it never blocks unload.
+  const persist = (reason: string) => {
+    try {
+      saveGame(true);
+      Logger.debug(`Game saved (${reason})`);
+    } catch (error) {
+      Logger.error(`Failed to save game (${reason}):`, error);
+    }
+  };
+
   // Handle window visibility changes
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') {
-      // Game is being hidden, pause game but don't automatically save
-      Logger.debug('Game visibility changed to hidden, pausing game');
-      
+      // Game is being hidden (tab switch, minimise, or navigating away).
+      // Save first so nothing bought in the last minute is lost, then pause.
+      Logger.debug('Game visibility changed to hidden, saving and pausing game');
+      persist('visibility hidden');
+
       // Pause game processing
       getGameCore().stop();
       getGameLoop().stop();
@@ -171,10 +189,18 @@ function setupGlobalEvents(): void {
       getGameLoop().start();
     }
   });
-  
-  // We're removing the beforeunload handler to prevent auto-saving
-  // when the page refreshes or closes
-  
+
+  // Save when the page is being unloaded (refresh / close / navigation).
+  // `pagehide` is more reliable than `beforeunload` (fires on mobile / bfcache)
+  // but we register both to be safe.
+  window.addEventListener('pagehide', () => persist('pagehide'));
+  window.addEventListener('beforeunload', () => persist('beforeunload'));
+
+  // Save immediately after a purchase so a quick refresh can never roll back
+  // an upgrade or generator the player just bought (issue #2).
+  eventBus.on(GENERATOR_PURCHASED, () => persist('generator purchased'));
+  eventBus.on(UPGRADE_PURCHASED, () => persist('upgrade purchased'));
+
   // Report errors through the event bus
   window.addEventListener('error', (event) => {
     eventBus.emit('ERROR', {
