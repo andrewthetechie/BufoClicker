@@ -58,5 +58,9 @@ module.exports = {
     compress: true,
     port: 9000,
     hot: true,
+    // Bind to all interfaces and accept any Host header so the dev server also
+    // works from inside a container / across the Docker network.
+    host: '0.0.0.0',
+    allowedHosts: 'all',
   },
 };
