@@ -58,6 +58,13 @@ docker run --rm -v "$PWD":/app -w /app node:22-bookworm bash -lc \
   `upgradeManager.ts`'s `applySingleEffect` switch - it silently falls into
   the `default: Logger.warn` branch. Buying it currently does nothing but
   cost bufos. Pre-existing, not introduced by any of the above.
+- **A full-screen fight overlay needs `pointer-events: auto` on itself, not
+  just its children.** `.boss-fight-overlay` used to be `pointer-events: none`
+  with only the sprite/HUD set to `auto` - visually it covered the screen but
+  clicks fell straight through it to the bufo underneath, letting players
+  farm normal click income during a "boss fight." Fixed by making the overlay
+  itself swallow clicks (`pointer-events: auto`); the sprite/HUD still work
+  since their own `auto` takes precedence as descendants.
 
 ## Things intentionally not done
 
@@ -120,8 +127,45 @@ repo states no explicit license** ("vetted to be safe for work but use your
 own best judgement"). Same provenance as the project's original ~60 images -
 flagging in case it matters later (e.g. if this ever needs a real
 distribution license). Background photos are properly Unsplash-License (free,
-no attribution required): the pond photo and the nebula/space photo used for
-the final boss stage.
+no attribution required): the pond photo, the nebula/space photo (final boss
+stage), and `swamp.jpg`/`storm.jpg`/`volcano.jpg`/`inferno.jpg` (boss stages
+1-4, one real background-image swap per defeated boss instead of just a CSS
+filter on the pond photo).
+
+## Economy balance pass (generators.json)
+
+Diagnosed by simulating the whole economy in Python (idle-only, "always buy
+whatever has the best production-per-cost right now" greedy strategy, using
+the real cost/production formulas from `generatorManager.ts`/
+`models/generators.ts`), not by inspection alone - the simulator isn't
+checked into the repo (throwaway, same as the Puppeteer scratch scripts).
+Two structural issues showed up:
+
+1. **Payback period (`baseCost / baseProduction`) roughly doubled every
+   generator tier** (100s -> 100s -> 137s -> 255s -> 500s -> ... -> 207,000s
+   at `singularity_bufo`), instead of staying roughly flat like the early
+   tiers do. Each new premium tier was a worse deal than the last, which
+   compounds badly by the time you reach the tiers added this session.
+2. **Two "own 10 of the previous tier" unlock gates dominated their
+   `totalBufos` threshold**: `cosmic_bufo` required `golden_bufo >= 10` and
+   `singularity_bufo` required `omega_bufo >= 10`. At those tiers'
+   `costMultiplier` (1.5-1.85), the cumulative cost of reaching the 10th unit
+   dwarfed the nominal `totalBufos` gate, so the count-gate - not the headline
+   number - was the actual bottleneck.
+
+Fixed by flattening `cosmic_bufo` through `singularity_bufo`'s
+`baseCost`/`baseProduction`/`costMultiplier` so payback grows ~1.55x per tier
+instead of ~2x, and dropping both `>= 10` count-gates to `>= 5`. In
+simulation this took `singularity_bufo`'s unlock time from ~19h50m down to
+~10h39m of optimal play, and shrank the worst late-game dead zone
+(omega -> singularity) from ~8h to ~23min. Did **not** touch tadpole through
+golden_bufo (pre-existing, already paces well, new tier roughly every few
+minutes early on) - the one remaining soft spot is the golden_bufo ->
+cosmic_bufo gap, still ~2h17m in simulation. If this needs another pass,
+re-derive the same way: compute `baseCost/baseProduction` per tier and check
+it's not growing much faster than the tier before it, and check any
+`generators`-type unlock gate's *cumulative* cost (not just its face value)
+against the `totalBufos` gate it's paired with.
 
 ## Numbers that are first-pass and may need tuning
 
@@ -130,9 +174,15 @@ correct (right math, right event flow, no crashes/errors):
 
 - Boss HP/thresholds in `src/models/boss.ts` (5-boss ladder, gated by
   totalBufos thresholds, calibrated against the click-upgrade chain in
-  `upgrades.json`).
+  `upgrades.json`). Simulated pacing looks good (boss1@~10min, boss2@~2h25m,
+  boss3@~4h29m, boss4@~5h44m, boss5@~8h38m) but all 5 bosses are done well
+  before the generator ladder finishes (`nebula`/`omega`/`singularity` unlock
+  *after* boss5) - there's a long late-game stretch with no more boss content
+  to look forward to. Worth considering 1-2 more bosses gated on those tiers
+  if the tail still feels flat after playtesting.
 - New generator tier costs/production in `assets/data/generators.json`
-  (`nebula_bufo`/`omega_bufo`/`singularity_bufo`) and their upgrades.
+  (`nebula_bufo`/`omega_bufo`/`singularity_bufo`) and their upgrades - see
+  the balance pass above, now flattened but still first-pass/un-playtested.
 - Prestige curve (`prestigePointsFor` in `src/models/prestige.ts`):
   `floor(sqrt(totalBufos / 1e9))`, +10%/point.
 - Golden Bufo timing/rewards in `src/managers/goldenBufoManager.ts`
