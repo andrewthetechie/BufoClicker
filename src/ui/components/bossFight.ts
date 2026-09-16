@@ -44,8 +44,7 @@ export class BossFight {
     this.layer.className = 'boss-layer';
     document.body.appendChild(this.layer);
 
-    // Restore the world's visual stage from already-defeated bosses (page load / save restore).
-    document.body.dataset.bossStage = String(getGameCore().getBossManager().getDefeatedCount());
+    this.syncBossStage();
 
     const bus = getEventBus();
     bus.on(GAME_TICK, () => this.refreshBanner());
@@ -69,8 +68,23 @@ export class BossFight {
 
   // --- Banner: "a boss is available, opt in when ready" --------------------
 
+  /**
+   * Keep the background stage in sync with the actually-defeated boss count.
+   * Called from init() (best-effort, may run before the save has loaded -
+   * see initialization.ts, UI init happens before loadGameWithRetry()) and
+   * every GAME_TICK via refreshBanner() so it self-corrects the moment the
+   * real save data arrives, without needing a dedicated "save loaded" event.
+   */
+  private syncBossStage(): void {
+    const count = getGameCore().getBossManager().getDefeatedCount();
+    if (document.body.dataset.bossStage !== String(count)) {
+      document.body.dataset.bossStage = String(count);
+    }
+  }
+
   private refreshBanner(): void {
     if (!this.layer) return;
+    this.syncBossStage();
     // Never show the banner while a fight is already running.
     if (getGameCore().getBossManager().getActiveFight()) return;
     // "Not yet" snoozes the banner for a while instead of it reappearing next tick.
