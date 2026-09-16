@@ -116,17 +116,23 @@ that instruction stood all session.
     Verified with a simulated mousedown→mousemove→mouseup drag across the
     sprite during a fight - `window.getSelection().toString()` is empty.
 
-## TODO for next session (explicitly requested, not yet done)
+14. **Boss banner "Not yet" now snoozes instead of re-appearing.** Previously
+    `BossFight.refreshBanner()` re-checked on every `GAME_TICK` and
+    immediately re-showed the banner the very next tick after "Not yet" was
+    clicked. Fixed with a `private snoozedUntil: number = 0` timestamp on
+    `BossFight`, checked at the top of `refreshBanner()`
+    (`src/ui/components/bossFight.ts`) and set to
+    `Date.now() + (60_000 + Math.random()*120_000)` in the "Not yet" click
+    handler. Verified with a headless-Chrome script: banner shows, "Not yet"
+    hides it, and it stays hidden well past the next tick (previously it
+    reappeared within ~1 tick). Did not wait out a real 60-180s window to
+    watch it reappear (impractical to test quickly since the snooze uses
+    wall-clock `Date.now()`, not scaled game time) - the reappearance branch
+    is a one-line comparison, low risk.
 
-- **Boss banner "Not yet" should snooze, not just re-appear.** Right now
-  `BossFight.refreshBanner()` re-checks on every `GAME_TICK` and immediately
-  re-shows the banner once dismissed (`shownBossId` is cleared on "Not yet",
-  so the very next tick shows it again) - annoying. Fix: when "Not yet" is
-  clicked, hide the banner and suppress re-showing it for a **random 60-180
-  seconds** before `refreshBanner()` is allowed to show it again (e.g. a
-  `private snoozedUntil: number = 0` timestamp checked at the top of
-  `refreshBanner()`, set to `Date.now() + (60_000 + Math.random()*120_000)`
-  in the "Not yet" handler).
+## TODO for next session
+
+Nothing outstanding right now.
 
 ## Things intentionally NOT done
 

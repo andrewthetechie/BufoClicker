@@ -34,6 +34,7 @@ export class BossFight {
   private spriteEl: HTMLElement | null = null;
   private moveTimer: number | null = null;
   private shownBossId: string | null = null;
+  private snoozedUntil = 0;
 
   public init(): void {
     this.layer = document.createElement('div');
@@ -69,6 +70,8 @@ export class BossFight {
     if (!this.layer) return;
     // Never show the banner while a fight is already running.
     if (getGameCore().getBossManager().getActiveFight()) return;
+    // "Not yet" snoozes the banner for a while instead of it reappearing next tick.
+    if (Date.now() < this.snoozedUntil) return;
 
     const boss = getGameCore().getBossManager().getAvailableBoss();
 
@@ -107,6 +110,7 @@ export class BossFight {
       banner.remove();
       this.banner = null;
       this.shownBossId = null;
+      this.snoozedUntil = Date.now() + (60_000 + Math.random() * 120_000);
     });
 
     this.layer.appendChild(banner);
