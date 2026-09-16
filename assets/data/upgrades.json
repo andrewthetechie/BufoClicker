@@ -513,16 +513,15 @@
   {
     "id": "ribbit_resonance",
     "name": "Ribbit Resonance",
-    "description": "Each click does more with less. How much more, I'm not sure.",
+    "description": "Improve click power by 1.5x",
     "flavorText": "Your clicks create sound waves that resonate with the bufos' natural frequency. The resulting harmony is both beautiful and productive.",
     "category": "click",
     "cost": 100000,
     "iconPath": "./assets/images/upgrades/bufo-mindblown.png",
     "effects": [
       {
-        "type": "clickBpsBonus",
-        "percentage": 0.01,
-        "duration": 5
+        "type": "clickMultiplier",
+        "multiplier": 1.5
       }
     ],
     "unlockConditions": [
