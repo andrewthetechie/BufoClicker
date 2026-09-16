@@ -988,6 +988,48 @@
       ]
     },
     {
+      "id": "stronger_clicks_6",
+      "name": "Nebular Overdrive",
+      "description": "Increase click power by 10x",
+      "flavorText": "Each click now carries the force of a collapsing star. The bufos aren't sure whether to applaud or flee.",
+      "category": "click",
+      "cost": 40000000000000,
+      "iconPath": "./assets/images/upgrades/bufo-drifts-through-the-void.png",
+      "effects": [
+        {
+          "type": "clickMultiplier",
+          "multiplier": 10
+        }
+      ],
+      "unlockConditions": [
+        {
+          "type": "totalBufos",
+          "value": 20000000000000
+        }
+      ]
+    },
+    {
+      "id": "omniscient_clicks",
+      "name": "Omniscient Tap",
+      "description": "Increase click power by 20x",
+      "flavorText": "You no longer click the bufo. You simply understand that it has already been clicked.",
+      "category": "click",
+      "cost": 1500000000000000,
+      "iconPath": "./assets/images/upgrades/bufo-starstruck.png",
+      "effects": [
+        {
+          "type": "clickMultiplier",
+          "multiplier": 20
+        }
+      ],
+      "unlockConditions": [
+        {
+          "type": "totalBufos",
+          "value": 800000000000000
+        }
+      ]
+    },
+    {
       "id": "premium_prosperity",
       "name": "Golden Prosperity",
       "description": "Increase Prosperity Bufo production by 4x",

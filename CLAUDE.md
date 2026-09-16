@@ -170,19 +170,43 @@ it's not growing much faster than the tier before it, and check any
 `generators`-type unlock gate's *cumulative* cost (not just its face value)
 against the `totalBufos` gate it's paired with.
 
+## Boss ladder extension (interdimensional_bufo, omniscient_bufo)
+
+The original 5-boss ladder's click-power chain (`stronger_clicks_1` through
+`quantum_click` in `upgrades.json`) tops out at a fixed native
+`clickMultiplier` of 1,125,000 (750,000 from the chain documented in
+`boss.ts` x 1.5 from `ribbit_resonance`) - there are no more click upgrades
+past that point, so bosses gated any further out than `mega_bufo` would be
+either trivial (if easy) or permanently unwinnable (if hard), since the
+player's click power literally cannot grow any further. Added two new
+click upgrades specifically to unstick this: `stronger_clicks_6` (10x,
+gates around the nebula/omega tiers) and `omniscient_clicks` (20x, gates
+after singularity unlocks), then calibrated the two new bosses' HP against
+the click power those upgrades unlock (same "~120 clicks in 30s" target used
+for the original ladder, computed by hand: `clickPower = clickMultiplier x
+(1 + defeatedCount x 0.25)`, `HP = clickPower x 120`). If you extend the
+ladder again, this is the pattern: a boss needs *both* a threshold past the
+previous one *and* a fresh click-power upgrade to grind toward, or it isn't
+a real checkpoint.
+
 ## Numbers that are first-pass and may need tuning
 
 None of these have been human-playtested, only verified to be *mechanically*
 correct (right math, right event flow, no crashes/errors):
 
-- Boss HP/thresholds in `src/models/boss.ts` (5-boss ladder, gated by
+- Boss HP/thresholds in `src/models/boss.ts` (7-boss ladder, gated by
   totalBufos thresholds, calibrated against the click-upgrade chain in
-  `upgrades.json`). Simulated pacing looks good (boss1@~10min, boss2@~2h25m,
-  boss3@~4h29m, boss4@~5h44m, boss5@~8h38m) but all 5 bosses are done well
-  before the generator ladder finishes (`nebula`/`omega`/`singularity` unlock
-  *after* boss5) - there's a long late-game stretch with no more boss content
-  to look forward to. Worth considering 1-2 more bosses gated on those tiers
-  if the tail still feels flat after playtesting.
+  `upgrades.json`). Simulated pacing for bosses 1-5 looks good (boss1@~10min,
+  boss2@~2h25m, boss3@~4h29m, boss4@~5h44m, boss5@~8h38m). Bosses 6-7
+  (`interdimensional_bufo` @ 50T totalBufos, `omniscient_bufo` @ 2 quadrillion)
+  were added specifically to cover the late-game stretch after
+  `nebula`/`omega`/`singularity` unlock, which previously had zero boss
+  content - see the ladder-extension note below for how they were
+  calibrated. Not wall-clock-simulated (that stretch would take many
+  simulated hours); verified only by seeding `resources.clickMultiplier`
+  directly in a headless-Chrome test and confirming each clears in
+  ~108-114 hits against a 120-hit target, sequential unlock ordering holds,
+  and `document.body.dataset.bossStage` reaches "7".
 - New generator tier costs/production in `assets/data/generators.json`
   (`nebula_bufo`/`omega_bufo`/`singularity_bufo`) and their upgrades - see
   the balance pass above, now flattened but still first-pass/un-playtested.

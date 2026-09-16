@@ -39,6 +39,18 @@ body[data-boss-stage="5"]::before {
   filter: none;
 }
 
+/* Interdimensional Bufo defeated: the same sky, seen from somewhere stranger. */
+body[data-boss-stage="6"]::before {
+  background-image: url('./../assets/images/background/space.jpg');
+  filter: hue-rotate(200deg) saturate(1.6) brightness(0.9);
+}
+
+/* The Omniscient Bufo defeated: the final stage - the sky itself glows gold. */
+body[data-boss-stage="7"]::before {
+  background-image: url('./../assets/images/background/space.jpg');
+  filter: hue-rotate(45deg) saturate(1.8) brightness(1.15) contrast(1.15);
+}
+
 /* ---- Banner: "a boss is available" ------------------------------------- */
 
 .boss-layer {

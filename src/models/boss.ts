@@ -32,6 +32,13 @@ export const BOSS_BONUS_PER_DEFEAT = 0.25; // +25% per boss
  * click-upgrade chain in upgrades.json so each boss is beatable once you've
  * bought the click upgrades available by that point, and a real grind if you
  * haven't. Treat these as a first pass - tune after playtesting.
+ *
+ * The last two bosses (interdimensional_bufo, omniscient_bufo) exist because
+ * the native click-upgrade chain tops out at quantum_click, well before the
+ * nebula/omega/singularity generator tiers - stronger_clicks_6 and
+ * omniscient_clicks (upgrades.json) were added alongside these two bosses
+ * specifically so there's still a click-power wall to climb late-game
+ * instead of the ladder just running out of upgrades to gate on.
  */
 export const BOSSES: BossDefinition[] = [
   {
@@ -69,10 +76,26 @@ export const BOSSES: BossDefinition[] = [
   {
     id: 'mega_bufo',
     name: 'MEGA BUFO',
-    flavorText: 'The final form. The one all other bufos speak of in hushed croaks.',
+    flavorText: 'The one all other bufos speak of in hushed croaks. Surely nothing tops this... right?',
     threshold: 10_000_000_000_000,
     maxHealth: 225_000_000,
     iconPath: './assets/images/bosses/mega-bufo.png'
+  },
+  {
+    id: 'interdimensional_bufo',
+    name: 'Interdimensional Bufo',
+    flavorText: 'It rests atop the terrarium of existence, watching your entire pond like it were a fish tank.',
+    threshold: 50_000_000_000_000,
+    maxHealth: 3_000_000_000,
+    iconPath: './assets/images/bosses/terrarium.png'
+  },
+  {
+    id: 'omniscient_bufo',
+    name: 'The Omniscient Bufo',
+    flavorText: 'It already knows how this fight ends. Prove it wrong.',
+    threshold: 2_000_000_000_000_000,
+    maxHealth: 70_000_000_000,
+    iconPath: './assets/images/bosses/omniscient.png'
   }
 ];
 
