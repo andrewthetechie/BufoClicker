@@ -68,27 +68,17 @@ Open <http://localhost:8080>.
 
 ## Deploy to GitHub Pages
 
-Publishing pushes the built site to the `gh-pages` branch of the `origin`
-remote (GitHub Pages then serves it). The `deploy` script runs `build` first
-via npm's `predeploy` hook.
-
-```bash
-docker compose run --rm \
-  -v "$HOME/.ssh:/root/.ssh:ro" \
-  -e GIT_AUTHOR_NAME="$(git config user.name)" \
-  -e GIT_AUTHOR_EMAIL="$(git config user.email)" \
-  -e GIT_COMMITTER_NAME="$(git config user.name)" \
-  -e GIT_COMMITTER_EMAIL="$(git config user.email)" \
-  build npm run deploy
-```
+Deployment is automatic via GitHub Actions (`.github/workflows/deploy.yml`):
+every push to `main` builds the site (`npm ci && npm run build`) and publishes
+`./dist` straight to GitHub Pages. There is nothing to run locally - just
+merge to `main`.
 
 Notes:
 
-- The container needs push access to `origin`. Mounting `~/.ssh` read-only (as
-  above) reuses your host SSH key; alternatively use a remote URL with a token.
-- First deployment: in the GitHub repo settings, set **Pages → Build and
-  deployment → Source** to **Deploy from a branch**, branch `gh-pages` / `/`
-  (root).
+- In the repo settings, **Pages → Build and deployment → Source** must be set
+  to **GitHub Actions** (not "Deploy from a branch"). Set this once per repo;
+  the workflow handles every deploy after that.
+- Check progress under the repo's **Actions** tab, or `gh run list` / `gh run watch`.
 - The live URL is `https://<owner>.github.io/BufoClicker/`.
 
 ---
@@ -140,5 +130,6 @@ npm ci                 # install exact locked dependencies
 npm run start          # dev server on http://localhost:9000 (opens a browser)
 npm run build          # production build into ./dist
 npm run serve:dist     # preview ./dist on http://localhost:8080
-npm run deploy         # build + publish ./dist to the gh-pages branch
 ```
+
+Deployment always runs in GitHub Actions (see above), not locally.
