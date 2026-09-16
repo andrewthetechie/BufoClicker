@@ -53,11 +53,14 @@ docker run --rm -v "$PWD":/app -w /app node:22-bookworm bash -lc \
   locale) and unclamped huge numbers render as raw scientific notation.
   `numberUtils.ts`'s `formatNumber`/`formatNumberWithPrecision` force
   `'en-US'` and clamp/format the K/M/B-suffix path explicitly.
-- **`ribbit_resonance` upgrade is a known no-op.** Its effect type
-  `clickBpsBonus` (`assets/data/upgrades.json`) isn't handled by
-  `upgradeManager.ts`'s `applySingleEffect` switch - it silently falls into
-  the `default: Logger.warn` branch. Buying it currently does nothing but
-  cost bufos. Pre-existing, not introduced by any of the above.
+- **Only `clickMultiplier`, `generatorProduction`, and `globalMultiplier` are
+  live upgrade effect types.** `upgradeManager.ts`'s `applySingleEffect`
+  switch silently no-ops (`default: Logger.warn`) on anything else - this bit
+  `ribbit_resonance`, which used an unhandled `clickBpsBonus` type and cost
+  100,000 bufos for nothing. Fixed by repointing it to `clickMultiplier`
+  instead of building a new temporary-buff mechanic for one upgrade. If you
+  add a new effect type to `upgrades.json`, it needs a case in that switch or
+  it'll fail the same way, silently.
 - **A full-screen fight overlay needs `pointer-events: auto` on itself, not
   just its children.** `.boss-fight-overlay` used to be `pointer-events: none`
   with only the sprite/HUD set to `auto` - visually it covered the screen but
