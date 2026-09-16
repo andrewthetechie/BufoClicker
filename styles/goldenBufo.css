@@ -90,3 +90,73 @@
 @media (prefers-reduced-motion: reduce) {
   .golden-bufo { animation: golden-bufo-in 200ms ease-out; }
 }
+
+/* ---- Timed buff countdown (Bufo Frenzy / Click Frenzy) ---- */
+/* Only ever shows short-lived buffs - permanent bonuses (prestige, boss
+   defeats, achievements) don't need a "time remaining" since there isn't
+   one. Sits above the boss-fight overlay (z-index 1500) since a Click
+   Frenzy's multiplier still applies to boss-hit damage. */
+
+.frenzy-indicator-layer {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 2100;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+  align-items: flex-end;
+}
+
+.frenzy-badge {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px 10px;
+  min-width: 150px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: linear-gradient(to bottom, #fff3cf, #ffd968);
+  color: #4a3800;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  animation: frenzy-badge-in 200ms ease-out;
+}
+
+.frenzy-badge--click {
+  background: linear-gradient(to bottom, #d7f0ff, #7fc7ff);
+  color: #073b57;
+}
+
+.frenzy-badge__label {
+  font-weight: 800;
+  font-size: 0.85em;
+  white-space: nowrap;
+}
+
+.frenzy-badge__time {
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  font-size: 0.85em;
+  text-align: right;
+}
+
+.frenzy-badge__bar {
+  grid-column: 1 / -1;
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+
+.frenzy-badge__bar-fill {
+  display: block;
+  height: 100%;
+  background: currentColor;
+  opacity: 0.6;
+  transition: width 120ms linear;
+}
+
+@keyframes frenzy-badge-in {
+  from { transform: translateX(20px); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}

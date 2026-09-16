@@ -119,6 +119,31 @@ docker run --rm -v "$PWD":/app -w /app node:22-bookworm bash -lc \
   `Date.now() + (60_000 + Math.random()*120_000)`. If you add more banner
   dismiss actions, route them through the same field rather than a fresh
   ad hoc flag.
+- **UI init runs before the save loads - don't set DOM state from persisted
+  data in `init()` and expect it to stick.** `initialization.ts`'s sequence
+  is: init managers -> init UI (step 4) -> init game core -> **then** load
+  the save (step 7). `BossFight.init()` used to set
+  `document.body.dataset.bossStage` once from `getDefeatedCount()`, which ran
+  against the fresh default state (0 defeated) - after a reload with
+  defeated bosses, the background silently reverted to stage 0 and never
+  corrected itself. Fixed by moving that read into a `syncBossStage()` method
+  called both from `init()` (best-effort) and every `GAME_TICK` via the
+  existing `refreshBanner()` poll, so it self-corrects within ~100ms of the
+  real save data arriving instead of needing a dedicated "save loaded" event.
+  Any other one-shot `init()`-time read of persisted state should either poll
+  the same way or hook `GAME_STARTED` (emitted after the save load
+  completes), not assume `init()` timing.
+- **Timed buffs get a countdown badge; permanent bonuses don't.** Golden
+  Bufo's two frenzy buffs (`frenzyProductionMultiplier`/
+  `frenzyClickMultiplier` in `resources`) are the only *temporary* multiplier
+  sources - everything else (prestige, boss defeats, achievements) is
+  permanent and has no "time left" to show. `GoldenBufoManager` tracks
+  `productionFrenzyEndsAt`/`clickFrenzyEndsAt` wall-clock timestamps and
+  exposes them via `getActiveFrenzies()`; `GoldenBufo` (the UI component)
+  polls that every `GAME_TICK` and renders a `.frenzy-badge` (label +
+  shrinking bar) in the top-right, same polling pattern as the boss HUD
+  timer. If a third timed buff is ever added, extend `getActiveFrenzies()`'s
+  return shape rather than inventing a second indicator.
 
 ## Asset provenance
 

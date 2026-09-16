@@ -28,6 +28,12 @@ export interface GoldenBufoReward {
   detail: string;
 }
 
+export interface ActiveFrenzy {
+  multiplier: number;
+  /** Wall-clock timestamp (ms) this buff expires at. */
+  endsAt: number;
+}
+
 // Timing (ms)
 const FIRST_SPAWN_MIN = 45_000;
 const FIRST_SPAWN_MAX = 90_000;
@@ -55,6 +61,9 @@ export class GoldenBufoManager {
   private expireTimer: number | null = null;
   private productionFrenzyTimer: number | null = null;
   private clickFrenzyTimer: number | null = null;
+  /** 0 = not active. Wall-clock timestamp, so the UI can compute "time left". */
+  private productionFrenzyEndsAt = 0;
+  private clickFrenzyEndsAt = 0;
   private active: GoldenBufoSpawn | null = null;
   private firstSpawnDone = false;
 
@@ -90,6 +99,8 @@ export class GoldenBufoManager {
     // End any running frenzy — buffs don't persist while the game is paused.
     this.clearTimer('productionFrenzyTimer');
     this.clearTimer('clickFrenzyTimer');
+    this.productionFrenzyEndsAt = 0;
+    this.clickFrenzyEndsAt = 0;
     this.setFrenzy({ frenzyProductionMultiplier: 1, frenzyClickMultiplier: 1 });
 
     Logger.debug('GoldenBufoManager stopped');
@@ -98,6 +109,21 @@ export class GoldenBufoManager {
   /** Is a Golden Bufo on screen right now? */
   public isActive(): boolean {
     return this.active !== null;
+  }
+
+  /** Any short-lived buffs currently running, for the UI to render a countdown for. */
+  public getActiveFrenzies(): { production: ActiveFrenzy | null; click: ActiveFrenzy | null } {
+    const now = Date.now();
+    return {
+      production:
+        this.productionFrenzyEndsAt > now
+          ? { multiplier: BUFO_FRENZY_MULT, endsAt: this.productionFrenzyEndsAt }
+          : null,
+      click:
+        this.clickFrenzyEndsAt > now
+          ? { multiplier: CLICK_FRENZY_MULT, endsAt: this.clickFrenzyEndsAt }
+          : null
+    };
   }
 
   /**
@@ -190,11 +216,13 @@ export class GoldenBufoManager {
         this.clearTimer('productionFrenzyTimer');
         this.setFrenzy({ frenzyProductionMultiplier: BUFO_FRENZY_MULT });
         getGeneratorManager().recalculateAllGenerators();
+        this.productionFrenzyEndsAt = Date.now() + BUFO_FRENZY_MS;
 
         this.productionFrenzyTimer = window.setTimeout(() => {
           this.setFrenzy({ frenzyProductionMultiplier: 1 });
           getGeneratorManager().recalculateAllGenerators();
           this.productionFrenzyTimer = null;
+          this.productionFrenzyEndsAt = 0;
         }, BUFO_FRENZY_MS);
 
         return {
@@ -207,10 +235,12 @@ export class GoldenBufoManager {
       case 'click_frenzy': {
         this.clearTimer('clickFrenzyTimer');
         this.setFrenzy({ frenzyClickMultiplier: CLICK_FRENZY_MULT });
+        this.clickFrenzyEndsAt = Date.now() + CLICK_FRENZY_MS;
 
         this.clickFrenzyTimer = window.setTimeout(() => {
           this.setFrenzy({ frenzyClickMultiplier: 1 });
           this.clickFrenzyTimer = null;
+          this.clickFrenzyEndsAt = 0;
         }, CLICK_FRENZY_MS);
 
         return {
