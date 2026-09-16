@@ -237,6 +237,7 @@ export class BossFight {
         <div class="boss-result boss-result--win">
           <img class="boss-result__portrait" src="${d.boss.iconPath}" alt="${d.boss.name}">
           <p>Your bufos will remember this croak for generations.</p>
+          <p class="boss-result__area">The world around you has changed - you've entered a new area.</p>
           <p class="boss-result__reward">Permanent multiplier is now <strong>x${d.multiplier.toFixed(2)}</strong> to all bufo production and click power.</p>
         </div>
       `,
