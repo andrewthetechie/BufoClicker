@@ -16,7 +16,10 @@ import {
 import type { BossDefinition } from '../../models/boss';
 import type { ActiveBossFight } from '../../managers/bossManager';
 
-const MOVE_INTERVAL_MS = 1200;
+// The sprite glides to its new spot (see .boss-sprite's transition in
+// bosses.css) then holds still until the next interval fires - it needs to
+// rest long enough after each move to actually be clickable.
+const MOVE_INTERVAL_MS = 3000;
 
 /**
  * Clicker Boss UI: a banner announcing an available boss, and - once the
