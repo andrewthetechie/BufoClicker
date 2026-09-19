@@ -463,9 +463,26 @@ public isAutoSaveEnabled(): boolean {
 
 
 /**
+ * Count one click towards the total-clicks stat and the click achievements.
+ * Separate from {@link click} so clicks that aren't on the main bufo - boss
+ * hits, which deal damage instead of earning bufos - still count as clicks.
+ */
+public registerClick(): void {
+  this.clickCount++;
+  this.achievementManager.setClickCount(this.clickCount);
+
+  const state = getStateManager().getState();
+  getStateManager().setState({
+    resources: {
+      clickCount: (state.resources.clickCount || 0) + 1
+    }
+  });
+}
+
+/**
  * Process a click on the main bufo
  */
-public click(): { 
+public click(): {
   bufosGained: number; 
   isCombo: boolean;
   comboMultiplier: number;
@@ -474,20 +491,8 @@ public click(): {
   const timeSinceLastClick = now - this.lastClickTime;
   this.lastClickTime = now;
   
-  // Update click statistics
-  this.clickCount++;
-  
-  // Track click count in achievement manager
-  this.achievementManager.setClickCount(this.clickCount);
-  
-  // Store click count in game state
-  const state = getStateManager().getState();
-  getStateManager().setState({
-    resources: {
-      clickCount: (state.resources.clickCount || 0) + 1
-    }
-  });
-  
+  this.registerClick();
+
   // Handle combo system
   let comboMultiplier = 1;
   let isCombo = false;
@@ -511,6 +516,9 @@ public click(): {
     this.clickCombo = 0;
   }
   
+  // Read after registerClick() so the click-count write is already applied.
+  const state = getStateManager().getState();
+
   // Calculate bufos gained from this click
   // Use the dedicated clickPower which is already calculated based on clickMultiplier
   const baseClickValue = state.resources.clickPower;

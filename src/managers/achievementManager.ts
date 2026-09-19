@@ -108,9 +108,9 @@ public initialize(silentLoad: boolean = false): void {
   private registerEventListeners(): void {
     const eventBus = getEventBus();
     
-    // Track clicks
+    // Track clicks. The count itself comes from GameCore.registerClick() via
+    // setClickCount() - incrementing here too would double-count every click.
     eventBus.on('click', (data: any) => {
-      this.clickCount++;
       this.checkAchievementCategory(AchievementCategory.Clicks);
     });
     
@@ -145,14 +145,41 @@ public initialize(silentLoad: boolean = false): void {
    * Setup detection for console opening
    */
 private setupConsoleDetection(): void {
-
+  // Keyboard shortcuts. Note these only cover Windows/Linux Chrome-style
+  // bindings and only fire if the page has focus - they are a fast path, not
+  // the real detection. The size check below is what actually catches it.
   window.addEventListener('keydown', (event) => {
-    // Detect F12 or Ctrl+Shift+I
-    if (event.key === 'F12' || (event.ctrlKey && event.shiftKey && event.key === 'I')) {
-      this.consoleOpened = true;
-      this.checkConsoleAchievement();
+    const key = event.key.toLowerCase();
+    const isInspect = (event.ctrlKey || event.metaKey) && event.shiftKey && (key === 'i' || key === 'j' || key === 'c');
+    if (event.key === 'F12' || isInspect) {
+      this.markConsoleOpened();
     }
   });
+
+  // Docked devtools shrink the viewport without shrinking the window, so a
+  // large outer/inner gap means the panel is open. This is what makes the
+  // achievement reachable when devtools is opened from the menu or
+  // right-click > Inspect, on a Mac, or was already open before page load -
+  // none of which produce a keydown.
+  const THRESHOLD = 160;
+  const checkSize = () => {
+    if (this.consoleOpened) return;
+    const widthGap = window.outerWidth - window.innerWidth;
+    const heightGap = window.outerHeight - window.innerHeight;
+    if (widthGap > THRESHOLD || heightGap > THRESHOLD) {
+      this.markConsoleOpened();
+    }
+  };
+  window.addEventListener('resize', checkSize);
+  window.setInterval(checkSize, 2000);
+  checkSize();
+}
+
+/** Flag the console as opened and unlock anything gated on it. */
+private markConsoleOpened(): void {
+  if (this.consoleOpened) return;
+  this.consoleOpened = true;
+  this.checkConsoleAchievement();
 }
   
   /**

@@ -203,6 +203,7 @@ export class BossFight {
     e.stopPropagation();
 
     const clickPower = getStateManager().getState().resources.clickPower;
+    getGameCore().registerClick();
     const fight = getGameCore().getBossManager().hit(clickPower);
     if (!fight) return; // fight ended (defeated) - event handlers take it from here
 

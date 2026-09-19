@@ -19,7 +19,10 @@ export enum GeneratorType {
   GoldenBufo = 'golden_bufo',
   CosmicBufo = 'cosmic_bufo',
   AncientBufo = 'ancient_bufo',
-  QuantumBufo = 'quantum_bufo'
+  QuantumBufo = 'quantum_bufo',
+  NebulaBufo = 'nebula_bufo',
+  OmegaBufo = 'omega_bufo',
+  SingularityBufo = 'singularity_bufo'
 }
 
 /**
