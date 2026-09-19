@@ -14,7 +14,46 @@
      - the shop sat below everything, miles from the bufo you tap.
 --------------------------------------------------------------------------- */
 
-@media (max-width: 768px) {
+/* Touch handling applies at every width - a touchscreen laptop taps the same
+   way a phone does.
+
+   touch-action: manipulation is the important one for a clicker: the default
+   `auto` leaves double-tap-to-zoom enabled, so tapping the bufo fast enough
+   to be worth doing is exactly the gesture that zooms the page (and on some
+   engines adds a ~300ms wait before the click lands, to see whether a second
+   tap is coming). `manipulation` disables double-tap zoom while leaving pinch
+   zoom alone, so this doesn't cost accessibility the way user-scalable=no
+   would. */
+.frog-display,
+.bufo-image,
+.golden-bufo,
+.boss-sprite,
+button,
+.shop-item,
+.upgrade-item,
+.purchase-amount-button {
+  touch-action: manipulation;
+}
+
+/* Hover styling latches on after a tap on touch devices - the bufo would stay
+   scaled up and shadowed after every click. Only apply it to real pointers. */
+@media (hover: none) {
+  .frog-display:hover {
+    transform: none;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+  }
+
+  .menu-button:hover,
+  .buy-button:hover {
+    transform: none;
+  }
+}
+
+/* Matches the stacking breakpoint in layout.css: once the three columns are a
+   single stack, everything in it needs phone sizing too. This deliberately
+   covers landscape phones (844x390) and small tablets, which are wider than a
+   portrait phone but still stacked and still touch-driven. */
+@media (max-width: 1024px) {
   .game-container {
     padding: 10px;
   }
@@ -213,6 +252,23 @@
     top: 8px;
     width: calc(100vw - 16px);
     padding: 10px 12px;
+  }
+}
+
+/* Landscape phone: only ~390px of height to work with, so a sticky bufo
+   eating a third of the screen is worse than no sticky bufo at all. */
+@media (max-height: 520px) and (orientation: landscape) {
+  .frog-display {
+    position: static;
+  }
+
+  .bufo-image {
+    height: 26vh;
+    max-height: 130px;
+  }
+
+  .resource-count .number-value {
+    font-size: clamp(1.1rem, 4vw, 2rem);
   }
 }
 

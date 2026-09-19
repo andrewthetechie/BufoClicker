@@ -110,3 +110,15 @@
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   }
+  /* Click effects render here rather than inside .frog-display, whose
+     .column ancestor sets overflow-y: auto - which per CSS forces overflow-x
+     to compute as auto too, clipping any effect spawned near an edge. A
+     fixed, viewport-sized layer has no clipping ancestor. Children position
+     themselves with viewport coordinates. */
+  .click-effect-layer {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: visible;
+    z-index: 900;
+  }

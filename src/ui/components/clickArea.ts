@@ -2,6 +2,18 @@ import { Component } from '../core/Component';
 import { ComponentOptions } from '../core/types';
 import { getGameCore } from '../../game/gameCore';
 
+/**
+ * Keep a viewport-positioned effect on screen.
+ * @param x Desired left edge, in viewport coordinates
+ * @param width Element width, so the right edge is accounted for
+ * @param margin Minimum gap to keep from either edge
+ */
+function clampToViewport(x: number, width: number, margin: number = 6): number {
+  const max = window.innerWidth - width - margin;
+  // A viewport narrower than the element itself would invert the range.
+  return max < margin ? margin : Math.max(margin, Math.min(x, max));
+}
+
 export interface ClickAreaOptions extends ComponentOptions {
   /** Path to bufo image */
   imagePath?: string;
@@ -40,6 +52,21 @@ export class ClickArea extends Component {
   private squishResetTimer: number | null = null;
 
   /**
+   * Click effects (ripple, floating number, bufo pop) render into this
+   * body-level fixed layer rather than into the click area itself.
+   *
+   * They used to be absolutely positioned children of `.frog-display`, which
+   * meant an effect spawned near an edge got clipped: `.column` sets
+   * `overflow-y: auto`, and per CSS a non-visible overflow on one axis forces
+   * the other to compute as `auto` too, so the column clips horizontally as
+   * well. Clicking the right-hand side of the bufo cut the "+N" label in half.
+   * A viewport-level layer has no clipping ancestor, and it also lets the
+   * effects (the bufo pop drifts up to 70px sideways) spill past the box the
+   * way they're supposed to.
+   */
+  private effectLayer: HTMLElement | null = null;
+
+  /**
    * Create a click area component
    */
   constructor(options: ClickAreaOptions = {}) {
@@ -64,6 +91,12 @@ export class ClickArea extends Component {
     // Find bufo image
     if (this.element) {
       this.bufoImage = this.element.querySelector('.bufo-image');
+    }
+
+    if (!this.effectLayer) {
+      this.effectLayer = document.createElement('div');
+      this.effectLayer.className = 'click-effect-layer';
+      document.body.appendChild(this.effectLayer);
     }
 
     // Add click event listeners
@@ -94,18 +127,11 @@ export class ClickArea extends Component {
       this.recentClicks.shift();
     }
 
-    // Get click position for effects
-    const rect = this.element?.getBoundingClientRect();
-    if (!rect) return;
-    
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
     // Trigger game click and get result
     const clickResult = getGameCore().click();
 
-    // Create visual effects
-    this.createClickEffects(x, y, clickResult);
+    // Viewport coordinates - the effects live in a fixed, body-level layer.
+    this.createClickEffects(e.clientX, e.clientY, clickResult);
   }
 
   /**
@@ -179,13 +205,16 @@ export class ClickArea extends Component {
    * like a ball tossed under gravity, fading out on the way down.
    */
   private createEmojiPop(x: number, y: number): void {
-    if (!this.element) return;
+    if (!this.effectLayer) return;
 
     const src = ClickArea.BUFO_IMAGES[Math.floor(Math.random() * ClickArea.BUFO_IMAGES.length)];
 
     const el = document.createElement('div');
     el.className = 'click-emoji-pop';
-    el.style.left = `${x}px`;
+    // 36px wide and centred on the point via a -18px margin, so keep it that
+    // far from either edge (it drifts up to 70px sideways from here, which is
+    // allowed to leave the screen - the label isn't).
+    el.style.left = `${clampToViewport(x, 0, 22)}px`;
     el.style.top = `${y}px`;
 
     const img = document.createElement('img');
@@ -197,7 +226,7 @@ export class ClickArea extends Component {
     img.onerror = () => el.remove();
     el.appendChild(img);
 
-    this.element.appendChild(el);
+    this.effectLayer.appendChild(el);
 
     const duration = 800 + Math.random() * 200; // ms
     const peakHeight = 50 + Math.random() * 50; // px risen at the apex
@@ -271,23 +300,29 @@ export class ClickArea extends Component {
     // Position with moderate random offset for scatter effect
     const offsetX = Math.random() * 30 - 15; // Reduced scatter: +/- 15px
     const offsetY = Math.random() * 20 - 10; // Reduced scatter: +/- 10px
-    element.style.left = `${x + offsetX}px`;
     element.style.top = `${y + offsetY}px`;
-    
+
     // Add to container
-    if (this.element) {
-      this.element.appendChild(element);
+    if (this.effectLayer) {
+      this.effectLayer.appendChild(element);
     }
-    
+
     // Animate with improved trajectory
     let progress = 0;
     const duration = 1500; // Fixed duration
     const startY = y + offsetY;
-    const startX = x + offsetX;
-    
+
+    // Nothing clips this layer any more, so the label has to keep itself
+    // inside the viewport - on a narrow phone, clicking the right-hand edge
+    // of the bufo would otherwise push "+N" off the side of the screen.
+    // Measured after appending, since the width depends on the number.
+    const drift = Math.random() * 40 - 20; // Slight horizontal drift
+    const startX = clampToViewport(x + offsetX, element.offsetWidth);
+    const targetX = clampToViewport(startX + drift, element.offsetWidth);
+    element.style.left = `${startX}px`;
+
     // Moderate range of movement
     const targetY = startY - (50 + Math.random() * 20); // Upward motion
-    const targetX = startX + (Math.random() * 40 - 20); // Slight horizontal drift
     
     const animationFrame = () => {
       progress += 16 / duration; // ~60fps
@@ -335,14 +370,7 @@ export class ClickArea extends Component {
    * Create click indicator
    */
   private createClickIndicator(x: number, y: number): void {
-    // Create indicator container if it doesn't exist
-    let container = this.element?.querySelector('.click-indicator-container');
-    if (!container && this.element) {
-      container = document.createElement('div');
-      container.classList.add('click-indicator-container');
-      this.element.appendChild(container);
-    }
-    
+    const container = this.effectLayer;
     if (!container) return;
     
     // Create indicator element
@@ -397,6 +425,11 @@ export class ClickArea extends Component {
       clearTimeout(this.squishResetTimer);
       this.squishResetTimer = null;
     }
+
+    if (this.effectLayer && this.effectLayer.parentNode) {
+      this.effectLayer.parentNode.removeChild(this.effectLayer);
+    }
+    this.effectLayer = null;
 
     super.destroy();
   }

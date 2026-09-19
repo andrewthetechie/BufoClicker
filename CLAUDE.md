@@ -90,6 +90,18 @@ to the repo to avoid creating the problem in the first place.
   puts `.modal--input-locked` (a `pointer-events: none` CSS class, see
   `modal.css`) on the close/confirm controls for 800ms. Any future modal that
   appears as a *consequence of clicking* wants the same treatment.
+- **`overflow-y: auto` silently clips the *horizontal* axis too.** Per CSS,
+  if one axis is not `visible` the other computes to `auto` rather than
+  staying `visible`. `.column` sets only `overflow-y: auto`, so it clipped
+  sideways as well - and the click effects (the "+N" label, the ripple, the
+  bufo pop) were absolutely positioned children of `.frog-display` inside it,
+  so clicking the right-hand edge of the bufo cut the label in half. They now
+  render into `.click-effect-layer`, a `position: fixed` body-level layer with
+  no clipping ancestor, positioned in viewport coordinates. Anything that
+  needs to visually escape a panel wants that layer, not a `z-index` bump -
+  z-index does nothing against an ancestor's overflow. The flip side is that
+  nothing constrains those effects any more, so `clampToViewport()` in
+  `clickArea.ts` keeps the label on screen on a narrow phone.
 - **A full-screen fight overlay needs `pointer-events: auto` on itself, not
   just its children.** `.boss-fight-overlay` used to be `pointer-events: none`
   with only the sprite/HUD set to `auto` - visually it covered the screen but
@@ -211,6 +223,22 @@ to the repo to avoid creating the problem in the first place.
 its selectors are single-class and media queries add no specificity. The base
 design is a desktop three-column layout that only ever collapsed to one stack
 at `<=1024px`; nothing else was sized for a phone.
+
+The breakpoint is `max-width: 1024px`, matching the stacking breakpoint in
+`layout.css` - deliberately wide enough to catch landscape phones (844x390)
+and small tablets, which are stacked and touch-driven but wider than a
+portrait phone. A separate `(max-height: 520px) and (orientation: landscape)`
+block un-stickies the bufo and shrinks it, since a sticky 190px bufo eats
+half a landscape phone's screen.
+
+`touch-action: manipulation` is set at every width (not just on mobile) for
+the bufo, boss sprite, golden bufo and buttons. The default `auto` leaves
+double-tap-to-zoom on, which is precisely the gesture rapid-clicking a
+clicker produces, and on some engines it also delays every click ~300ms
+waiting for a possible second tap. `manipulation` kills double-tap zoom while
+leaving pinch zoom alone, so it doesn't cost accessibility the way
+`user-scalable=no` would. Hover styling is neutralised under `(hover: none)`
+because `:hover` latches after a tap on touch devices.
 
 Two traps worth knowing:
 
