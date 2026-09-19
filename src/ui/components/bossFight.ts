@@ -248,7 +248,7 @@ export class BossFight {
     document.body.dataset.bossStage = String(d.defeatedCount);
     saveGame(true);
 
-    getUIManager().showModal({
+    const modal = getUIManager().showModal({
       id: 'boss-victory-modal',
       title: `${d.boss.name} Defeated!`,
       content: `
@@ -262,15 +262,28 @@ export class BossFight {
       buttons: [
         { text: 'Nice!', callback: () => getUIManager().closeModal(), className: 'modal-button confirm-button' }
       ],
-      closeOnBackdrop: true
+      closeOnBackdrop: false
     });
+    this.guardAgainstStrayClicks(modal);
+  }
+
+  /**
+   * A fight ends mid-click-spam, so whatever the player was doing a moment ago
+   * is still firing when the result modal appears. Backdrop dismissal is off
+   * for these two modals, and this additionally makes the close/confirm
+   * controls inert for a beat so an in-flight click can't skip the popup
+   * outright. Purely a CSS class on a timeout - nothing to get latched on.
+   */
+  private guardAgainstStrayClicks(modal: HTMLElement): void {
+    modal.classList.add('modal--input-locked');
+    setTimeout(() => modal.classList.remove('modal--input-locked'), 800);
   }
 
   private onLost(boss: BossDefinition): void {
     this.teardownFight();
     saveGame(true);
 
-    getUIManager().showModal({
+    const modal = getUIManager().showModal({
       id: 'boss-defeat-modal',
       title: `Defeated by ${boss.name}...`,
       content: `
@@ -283,8 +296,9 @@ export class BossFight {
       buttons: [
         { text: 'Try again later', callback: () => getUIManager().closeModal(), className: 'modal-button cancel-button' }
       ],
-      closeOnBackdrop: true
+      closeOnBackdrop: false
     });
+    this.guardAgainstStrayClicks(modal);
   }
 
   private teardownFight(): void {

@@ -119,3 +119,10 @@
   .stats-modal-content .panel-header {
     display: none; /* Hide the duplicate header */
   }
+  /* Briefly inert dismiss controls, so a click that was already in flight when
+     the modal opened can't skip it (see BossFight.guardAgainstStrayClicks). */
+  .modal--input-locked .modal-footer,
+  .modal--input-locked .modal-close {
+    pointer-events: none;
+    opacity: 0.55;
+  }
