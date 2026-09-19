@@ -79,6 +79,8 @@
   @import './prestige.css';
   @import './goldenBufo.css';
   @import './bosses.css';
+  /* Must stay last - the phone layer overrides everything above it. */
+  @import './mobile.css';
   /* Global styles */
   body {
     /* The actual background image lives on ::before (see bosses.css) so a

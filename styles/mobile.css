@@ -1,0 +1,228 @@
+/* ---- Phone / small-tablet layer ----------------------------------------
+   Imported last from index.css so it wins without needing !important,
+   except where the base rules use !important themselves (the column layout
+   in layout.css does).
+
+   The base layout is a three-column desktop design that only ever collapsed
+   to a single stack at <=1024px; nothing else was sized for a phone. The
+   concrete problems this fixes, measured at 375-412px wide:
+     - .game-menu laid its five buttons in one non-wrapping row, so Reset sat
+       at x=436 on a 375px screen and was simply unreachable.
+     - every interactive control was 31-33px tall, under the 44px minimum.
+     - the page ran to ~4400px because the bufo, generator rows and upgrade
+       icons were all at desktop size.
+     - the shop sat below everything, miles from the bufo you tap.
+--------------------------------------------------------------------------- */
+
+@media (max-width: 768px) {
+  .game-container {
+    padding: 10px;
+  }
+
+  .game-title {
+    font-size: 1.5rem;
+    margin: 4px 0 10px;
+  }
+
+  /* Columns no longer scroll independently here - the page scrolls - and
+     leaving overflow:auto on them clips sticky/overflowing children. */
+  .column {
+    overflow: visible !important;
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .three-column-layout {
+    gap: 10px;
+    min-height: 0;
+  }
+
+  /* Put the shop and upgrades directly after the bufo instead of behind the
+     full owned-generator list, which was ~2000px of scrolling away. */
+  .left-column   { order: 1; }
+  .right-column  { order: 2; }
+  .center-column { order: 3; }
+
+  /* --- Menu bar: wrap instead of overflowing off-screen --- */
+  .game-menu {
+    flex-wrap: wrap;
+    justify-content: stretch;
+    gap: 6px;
+  }
+
+  .menu-button {
+    flex: 1 1 calc(33.333% - 4px);
+    min-height: 44px;
+    padding: 8px 6px;
+    font-size: 0.85rem;
+  }
+
+  /* --- Resource counter: big numbers must not overflow the card --- */
+  .resource-display {
+    padding: 10px;
+    min-height: 0;
+    margin-bottom: 10px;
+  }
+
+  .resource-count .number-value {
+    /* 12 digits + separators has to fit 375px */
+    font-size: clamp(1.25rem, 8vw, 2.5rem);
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+  }
+
+  .resource-count .number-label {
+    font-size: 0.72rem;
+    letter-spacing: 0.5px;
+  }
+
+  .production-rate {
+    font-size: 0.85rem;
+    margin-top: 6px;
+  }
+
+  /* --- The bufo itself: smaller, and kept in view while you're near it --- */
+  .frog-display {
+    padding: 10px;
+    margin-bottom: 10px;
+    position: sticky;
+    top: 6px;
+    z-index: 3;
+  }
+
+  .bufo-image {
+    min-height: 0;
+    height: 34vw;
+    max-height: 190px;
+    width: auto;
+  }
+
+  /* --- Tap targets: 44px minimum on everything you actually press --- */
+  .buy-button,
+  .purchase-amount-button,
+  .upgrade-item button,
+  .modal-button,
+  .boss-banner__fight,
+  .boss-banner__later {
+    min-height: 44px;
+  }
+
+  .purchase-amount-button {
+    min-width: 44px;
+  }
+
+  /* A shop row is icon + name + a 120px-min buy button, which can't share one
+     line at 375px. Stack the button under the text and let it span the row
+     rather than letting it collide with the name. */
+  .generator-row {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .generator-left {
+    flex: 1 1 100%;
+  }
+
+  .generator-info {
+    margin-right: 0;
+  }
+
+  .buy-button {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+
+  /* --- Denser lists so the page isn't a mile long --- */
+  .owned-generator,
+  .shop-item {
+    padding: 10px;
+    gap: 8px;
+  }
+
+  .panel-content {
+    padding: 10px;
+  }
+
+  .panel-header h2 {
+    font-size: 1.05rem;
+  }
+
+  .production-stats .contributions {
+    /* Long tail of per-generator rows; useful on desktop, mostly scroll on a
+       phone. Cap it and let it scroll in place. */
+    max-height: 210px;
+    overflow-y: auto;
+  }
+
+  /* --- Overlays must fit the viewport --- */
+  .modal-content {
+    min-width: 0;
+    width: calc(100vw - 24px);
+    max-width: calc(100vw - 24px);
+  }
+
+  .achievement-notification {
+    max-width: calc(100vw - 24px);
+  }
+
+  .golden-bufo {
+    width: 76px;
+    height: 76px;
+  }
+
+  .frenzy-indicator-layer {
+    top: 8px;
+    right: 8px;
+  }
+
+  .frenzy-badge {
+    min-width: 0;
+    padding: 6px 9px;
+  }
+
+  /* --- Boss fight --- */
+  .boss-banner {
+    flex-wrap: wrap;
+    gap: 10px;
+    bottom: 10px;
+    padding: 12px;
+    max-width: calc(100vw - 16px);
+  }
+
+  .boss-banner__portrait {
+    width: 44px;
+    height: 44px;
+  }
+
+  .boss-banner__actions {
+    flex-direction: row;
+    flex-basis: 100%;
+  }
+
+  .boss-banner__fight,
+  .boss-banner__later {
+    flex: 1;
+  }
+
+  .boss-sprite {
+    width: 88px;
+    height: 88px;
+  }
+
+  .boss-fight-hud {
+    top: 8px;
+    width: calc(100vw - 16px);
+    padding: 10px 12px;
+  }
+}
+
+/* Narrow phones: the menu needs two per row rather than three. */
+@media (max-width: 420px) {
+  .menu-button {
+    flex: 1 1 calc(50% - 3px);
+  }
+
+  .boss-banner__flavor {
+    display: none; /* keeps the banner to a readable height */
+  }
+}

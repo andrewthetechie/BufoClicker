@@ -192,6 +192,34 @@ to the repo to avoid creating the problem in the first place.
   timer. If a third timed buff is ever added, extend `getActiveFrenzies()`'s
   return shape rather than inventing a second indicator.
 
+## Mobile
+
+`styles/mobile.css` is the phone/small-tablet layer and **must stay the last
+`@import` in `index.css`** - it relies on source order to win, since most of
+its selectors are single-class and media queries add no specificity. The base
+design is a desktop three-column layout that only ever collapsed to one stack
+at `<=1024px`; nothing else was sized for a phone.
+
+Two traps worth knowing:
+
+- **`.column` has `overflow-y: auto`**, which makes it a scroll container and
+  clips anything sticky or overflowing inside it. The mobile layer sets
+  `overflow: visible !important` there (the columns aren't height-limited on
+  a phone, the page scrolls instead) - that's what lets the bufo be
+  `position: sticky`.
+- **`.buy-button` has `min-width: 120px; flex-shrink: 0`** inside a flex
+  `.generator-row`. Giving it `width: 100%` makes it overlap the generator
+  name rather than fill the row; the row has to `flex-wrap` and the button
+  needs `flex: 1 1 100%` instead.
+
+Verify with headless Chrome at 375/390/412/768 wide and assert, rather than
+eyeballing screenshots: zero elements whose `right` exceeds `clientWidth`,
+zero `button`/`.shop-item`/`.upgrade-item` under 44x44, and that the boss
+sprite/banner/HUD and modals all stay inside the viewport. The page-level
+`scrollWidth` is a *bad* signal on its own - the container clips, so the menu
+bar overflowed to x=436 on a 375px screen (Reset was unreachable) while
+`documentElement.scrollWidth` still read 375.
+
 ## Asset provenance
 
 All bufo art (generator/upgrade/boss icons, the click-pop images) comes from
