@@ -85,11 +85,19 @@ export function saveGame(auto: boolean = false): boolean {
   }
 }
 /**
- * Calculate offline progress since last tick
- * @param lastTickTime Timestamp of last tick
- * @returns Offline progress data
+ * Credit production for wall-clock time the game wasn't ticking.
+ *
+ * Used for two different gaps: the browser being closed (from `loadGame`,
+ * which wants the one-minute floor so a quick refresh doesn't pop a
+ * "welcome back" for nothing) and the tab merely being backgrounded (from
+ * the visibilitychange handler, which passes `minimumMs: 0` because every
+ * second away is real idle time the player has earned).
+ *
+ * @param lastTickTime Timestamp of the last tick that was processed
+ * @param minimumMs Gaps shorter than this are ignored entirely
+ * @returns Offline progress data, or null if the gap was too short
  */
-function calculateOfflineProgress(lastTickTime: number): {
+export function applyElapsedProduction(lastTickTime: number, minimumMs: number = 60 * 1000): {
   timeAway: number;
   production: number;
   cappedProduction: number;
@@ -97,15 +105,14 @@ function calculateOfflineProgress(lastTickTime: number): {
 } | null {
   // Get the current time
   const now = Date.now();
-  
+
   // Calculate time away in milliseconds
   const timeAwayMs = now - lastTickTime;
-  
-  // Only apply if more than a minute has passed
-  if (timeAwayMs < 60 * 1000) {
+
+  if (timeAwayMs < minimumMs || timeAwayMs <= 0) {
     return null;
   }
-  
+
   // Convert to seconds
   const timeAwaySeconds = timeAwayMs / 1000;
   
@@ -316,7 +323,7 @@ export function loadGame(): boolean {
     gameCore.getUpgradeManager().initialize();
     
     // Calculate and apply offline progress
-    const offlineProgress = calculateOfflineProgress(lastTickTime);
+    const offlineProgress = applyElapsedProduction(lastTickTime);
     
     // Emit game loaded event
     getEventBus().emit(GAME_LOADED, {

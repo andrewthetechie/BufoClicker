@@ -2,7 +2,7 @@ import { getStateManager } from './core/stateManager';
 import { getEventBus } from './core/eventBus';
 import { GameCore, getGameCore } from './game/gameCore';
 import { GameLoop, getGameLoop } from './game/gameLoop';
-import { loadGame, saveGame } from './game/gameSave';
+import { loadGame, saveGame, applyElapsedProduction } from './game/gameSave';
 import { getUIManager } from './managers/UIManager';
 import { initializeManagers } from './managers';
 import * as Logger from './utils/logger';
@@ -177,14 +177,36 @@ function setupGlobalEvents(): void {
       // Game is being hidden (tab switch, minimise, or navigating away).
       // Save first so nothing bought in the last minute is lost, then pause.
       Logger.debug('Game visibility changed to hidden, saving and pausing game');
+
+      // Stamp the moment we stop so the resume path knows how long the tab was
+      // backgrounded. processTick keeps lastTick current while running, but it
+      // stops updating the instant we pause below.
+      getStateManager().setState({ gameSettings: { lastTick: Date.now() } });
       persist('visibility hidden');
 
       // Pause game processing
       getGameCore().stop();
       getGameLoop().stop();
     } else {
-      // Game is becoming visible again, resume
+      // Game is becoming visible again, resume.
       Logger.debug('Game visibility changed to visible, resuming game');
+
+      // requestAnimationFrame doesn't fire in a background tab, and we
+      // deliberately stop the loop on hide so a boss countdown can't run while
+      // the player isn't watching. Neither is a reason to lose idle income, so
+      // credit the whole gap before restarting. No minimum here: a 20-second
+      // tab switch is still 20 seconds of production the generators earned.
+      const lastTick = getStateManager().getState().gameSettings?.lastTick;
+      if (lastTick) {
+        const caughtUp = applyElapsedProduction(lastTick, 0);
+        if (caughtUp) {
+          Logger.debug(
+            `Credited ${caughtUp.cappedProduction} bufos for ${caughtUp.timeAway.toFixed(1)}s in the background`
+          );
+        }
+      }
+
+      // start() resets the loop's frame clock, so this can't double-count.
       getGameCore().start();
       getGameLoop().start();
     }

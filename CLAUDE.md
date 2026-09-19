@@ -180,6 +180,18 @@ to the repo to avoid creating the problem in the first place.
   toward the click achievements at all. `AchievementManager`'s `'click'`
   listener deliberately does *not* increment anything; it used to, on top of
   `setClickCount()`, which made every counted click worth 1.5 clicks.
+- **A backgrounded tab earns nothing unless you credit it on resume.** Two
+  things stop production when the tab is hidden: `requestAnimationFrame`
+  (which drives `gameLoop`) doesn't fire in a background tab, and
+  `initialization.ts`'s `visibilitychange` handler deliberately calls
+  `getGameCore().stop()` + `getGameLoop().stop()` so a boss countdown can't
+  run while nobody's watching. The pause is correct; losing the income isn't.
+  The hidden branch stamps `gameSettings.lastTick` and the visible branch
+  calls `applyElapsedProduction(lastTick, 0)` before restarting - same
+  function `loadGame()` uses for closed-browser offline progress, just with
+  the one-minute floor dropped, since a 20-second tab switch is still real
+  idle time. `GameLoop.start()` resets its own frame clock, so crediting the
+  gap before restarting can't double-count it.
 - **Timed buffs get a countdown badge; permanent bonuses don't.** Golden
   Bufo's two frenzy buffs (`frenzyProductionMultiplier`/
   `frenzyClickMultiplier` in `resources`) are the only *temporary* multiplier
