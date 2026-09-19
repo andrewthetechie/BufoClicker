@@ -26,7 +26,10 @@ export type UpgradeEffectType =
 export enum UnlockConditionType {
   TotalBufos = 'totalBufos',
   GeneratorCount = 'generatorCount',
-  Achievements = 'achievements'
+  Achievements = 'achievements',
+  Upgrade = 'upgrade',
+  /** Anything the JSON asked for that we don't implement. Never satisfied. */
+  Unknown = 'unknown'
 }
 
 /**
@@ -96,10 +99,12 @@ export async function initializeUpgrades(): Promise<Upgrade[]> {
     for (const upgradeData of data) {
       try {
         // Convert unlock conditions to proper enum types
+        // "upgrade" conditions name their prerequisite in `id`, everything
+        // else uses `target`.
         const unlockConditions: UnlockCondition[] = (upgradeData.unlockConditions || []).map((condition: any) => ({
           type: mapUnlockConditionTypeFromString(condition.type),
           value: condition.value,
-          target: condition.target
+          target: condition.target ?? condition.id
         }));
         
         // Convert effects
@@ -160,7 +165,15 @@ function mapUnlockConditionTypeFromString(type: string): UnlockConditionType {
     case 'totalbufos': return UnlockConditionType.TotalBufos;
     case 'generatorcount': return UnlockConditionType.GeneratorCount;
     case 'achievements': return UnlockConditionType.Achievements;
-    default: return UnlockConditionType.TotalBufos;
+    case 'upgrade': return UnlockConditionType.Upgrade;
+    default:
+      // Falling through to TotalBufos with an undefined value used to make the
+      // condition silently pass - loud is better than a gate that isn't there.
+      // Must be its own member: mapping to a real type would reinterpret the
+      // condition (e.g. a misspelled "upgrade" would quietly become a genuine
+      // prerequisite) instead of refusing it.
+      Logger.warn(`Unknown upgrade unlock condition type "${type}" - treating as always-unmet`);
+      return UnlockConditionType.Unknown;
   }
 }
 
@@ -186,7 +199,8 @@ export function meetsUnlockConditions(
   upgrade: Upgrade,
   totalBufos: number,
   generatorCounts: Record<GeneratorType, number>,
-  achievements: Record<string, boolean> = {}
+  achievements: Record<string, boolean> = {},
+  purchasedUpgrades: string[] = []
 ): boolean {
   // Check each unlock condition
   for (const condition of upgrade.unlockConditions) {
@@ -217,7 +231,17 @@ export function meetsUnlockConditions(
           return false;
         }
         break;
-        
+
+      case UnlockConditionType.Upgrade:
+        if (!condition.target) {
+          return false;
+        }
+
+        if (!purchasedUpgrades.includes(condition.target as string)) {
+          return false;
+        }
+        break;
+
       default:
         return false;
     }

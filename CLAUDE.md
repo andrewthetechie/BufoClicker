@@ -61,6 +61,31 @@ docker run --rm -v "$PWD":/app -w /app node:22-bookworm bash -lc \
   instead of building a new temporary-buff mechanic for one upgrade. If you
   add a new effect type to `upgrades.json`, it needs a case in that switch or
   it'll fail the same way, silently.
+- **An unrecognised unlock-condition type used to silently *pass*.**
+  `upgrades.json` has conditions like `{"type": "upgrade", "id": "..."}`
+  (prerequisite upgrade), but `mapUnlockConditionTypeFromString` had no case
+  for them, so they fell through to `default: TotalBufos` - with `value`
+  undefined, `totalBufos < undefined` is `false`, the condition "passed", and
+  three upgrades (`ribbit_resonance`, `metamorphosis_mastery`, `super_clicker`)
+  ignored their prerequisites entirely. Now a real `Upgrade` condition type,
+  and the `default` branch returns something *always unmet* plus a warning
+  rather than something always met. If you add a condition type to the JSON it
+  still needs a case in both that mapper and `meetsUnlockConditions`.
+- **`GeneratorType` drifts out of sync with `generators.json`.** The enum in
+  `models/generators.ts` is hand-maintained and was missing `nebula_bufo` /
+  `omega_bufo` / `singularity_bufo` for a whole session. Nothing in the game
+  enumerates it at runtime (it's structural typing plus `debugTools`), so the
+  only visible symptom was `debugTools.generator_debug.give()` refusing the
+  three newest tiers - which quietly invalidates any test that seeds state
+  through it. Add new generators to the enum at the same time as the JSON.
+- **Result modals must survive the click that was already in flight.** The
+  boss victory/defeat modals open the instant a fight ends, i.e. while the
+  player is still spamming clicks, and `closeOnBackdrop: true` meant the very
+  next click dismissed the popup before it could be read. They're now
+  `closeOnBackdrop: false` plus `BossFight.guardAgainstStrayClicks()`, which
+  puts `.modal--input-locked` (a `pointer-events: none` CSS class, see
+  `modal.css`) on the close/confirm controls for 800ms. Any future modal that
+  appears as a *consequence of clicking* wants the same treatment.
 - **A full-screen fight overlay needs `pointer-events: auto` on itself, not
   just its children.** `.boss-fight-overlay` used to be `pointer-events: none`
   with only the sprite/HUD set to `auto` - visually it covered the screen but
@@ -133,6 +158,24 @@ docker run --rm -v "$PWD":/app -w /app node:22-bookworm bash -lc \
   Any other one-shot `init()`-time read of persisted state should either poll
   the same way or hook `GAME_STARTED` (emitted after the save load
   completes), not assume `init()` timing.
+- **Boss progress is per-run, the boss multiplier is forever.**
+  `state.bosses` has two fields for this: `defeated` (ids beaten in the
+  current prestige run - drives the ladder in `getAvailableBoss()` and the
+  `data-boss-stage` background) and `lifetimeDefeats` (a count banked from
+  previous runs). `getBossMultiplier()` adds both, so `PrestigeManager.
+  transcend()` can fold `defeated` into `lifetimeDefeats` and clear it: the
+  ladder re-opens, the background resets to stage 0, and not one point of
+  earned multiplier is taken back. Anything else that wants to "reset progress
+  but keep the reward" should copy this shape rather than trying to preserve
+  a derived number.
+- **All clicks go through `GameCore.registerClick()`.** It owns
+  `gameCore.clickCount`, `resources.clickCount` and the achievement manager's
+  counter, so the three can't drift. `click()` (the main bufo, which earns
+  bufos) and `BossFight.handleHit()` (boss damage, which doesn't) both call
+  it - boss fights are most of the late-game clicking and used not to count
+  toward the click achievements at all. `AchievementManager`'s `'click'`
+  listener deliberately does *not* increment anything; it used to, on top of
+  `setClickCount()`, which made every counted click worth 1.5 clicks.
 - **Timed buffs get a countdown badge; permanent bonuses don't.** Golden
   Bufo's two frenzy buffs (`frenzyProductionMultiplier`/
   `frenzyClickMultiplier` in `resources`) are the only *temporary* multiplier
@@ -232,6 +275,27 @@ correct (right math, right event flow, no crashes/errors):
   directly in a headless-Chrome test and confirming each clears in
   ~108-114 hits against a 120-hit target, sequential unlock ordering holds,
   and `document.body.dataset.bossStage` reaches "7".
+- The late upgrade tiers (`<gen>_mastery` / `<gen>_ascendancy` in
+  `upgrades.json`). Every generator used to stop offering upgrades far below
+  the count players actually reach - the last chromatic gate was 25 owned
+  against a reachable ~55, quantum was 5 against ~22 - so buying more of
+  anything eventually stopped unlocking anything.
+  **Gates must come from simulated reachable counts, not from a cost
+  threshold.** The first attempt derived them from "the count at which one
+  more unit costs ~1e13/1e16" and 12 of 28 new upgrades turned out to be
+  permanently unreachable, because a greedy buyer stops pouring bufos into a
+  cheap generator long before its unit cost gets that high. Re-derive by
+  re-running the greedy sim from the economy balance pass above (buy whatever
+  has the best marginal production-per-cost, real cost/production formulas,
+  upgrade multipliers applied as they unlock) with the new tiers *excluded*
+  so it isn't circular, then place mastery near the plateau at ~1e16 lifetime
+  spend and ascendancy near the plateau at ~1e18. Cost is 2x the unit that
+  unlocks it - the median ratio of the pre-existing count-gated upgrades.
+  Current state: every count-gated upgrade in the file unlocks by ~1e19
+  lifetime spend, and nothing is dead content. That sim also caught three
+  *pre-existing* upgrades that were already unreachable
+  (`froglet_boost_4` gated at 150 froglets against a reachable ~118, since
+  lowered to 100); check for those too if you add generators.
 - New generator tier costs/production in `assets/data/generators.json`
   (`nebula_bufo`/`omega_bufo`/`singularity_bufo`) and their upgrades - see
   the balance pass above, now flattened but still first-pass/un-playtested.

@@ -698,8 +698,8 @@
       },
       {
         "type": "generatorCount",
-        "target": "tadpole",
-        "value": 50
+        "target": "froglet",
+        "value": 25
       }
     ]
   },
@@ -1333,7 +1333,7 @@
       {
         "type": "generatorCount",
         "target": "froglet",
-        "value": 150
+        "value": 100
       }
     ]
   },
@@ -1577,6 +1577,581 @@
       {
         "type": "totalBufos",
         "value": 10000000000000
+      }
+    ]
+  },
+  {
+    "id": "tadpole_mastery",
+    "name": "Tadpole Swarm Tactics",
+    "description": "Increase Bufo Tadpole production by 3x",
+    "flavorText": "There are so many now that the pond has developed its own weather system.",
+    "category": "generator",
+    "cost": 380000000,
+    "iconPath": "./assets/images/upgrades/bufo-smol.png",
+    "effects": [
+      {
+        "type": "generatorProduction",
+        "target": "tadpole",
+        "multiplier": 3
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "generatorCount",
+        "target": "tadpole",
+        "value": 120
+      }
+    ]
+  },
+  {
+    "id": "tadpole_ascendancy",
+    "name": "Spawn Surge",
+    "description": "Increase Bufo Tadpole production by 4x",
+    "flavorText": "You've stopped counting individual tadpoles and started measuring them by volume.",
+    "category": "generator",
+    "cost": 13000000000,
+    "iconPath": "./assets/images/upgrades/smol-bufo-feels-blessed.png",
+    "effects": [
+      {
+        "type": "generatorProduction",
+        "target": "tadpole",
+        "multiplier": 4
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "generatorCount",
+        "target": "tadpole",
+        "value": 145
+      }
+    ]
+  },
+  {
+    "id": "froglet_mastery",
+    "name": "Froglet Legion Drills",
+    "description": "Increase Bufo Froglet production by 3x",
+    "flavorText": "They hop in formation now. Nobody taught them this.",
+    "category": "generator",
+    "cost": 150000000000,
+    "iconPath": "./assets/images/upgrades/bufo-caught-a-small-bufo.png",
+    "effects": [
+      {
+        "type": "generatorProduction",
+        "target": "froglet",
+        "multiplier": 3
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "generatorCount",
+        "target": "froglet",
+        "value": 112
+      }
+    ]
+  },
+  {
+    "id": "giant_bufo_mastery",
+    "name": "Colossal Conditioning",
+    "description": "Increase Giant Bufo production by 3x",
+    "flavorText": "Each one benches a smaller bufo for cardio.",
+    "category": "generator",
+    "cost": 160000000000,
+    "iconPath": "./assets/images/upgrades/chonky-bufo-wants-to-be-held.png",
+    "effects": [
+      {
+        "type": "generatorProduction",
+        "target": "giant_bufo",
+        "multiplier": 3
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "generatorCount",
+        "target": "giant_bufo",
+        "value": 60
+      }
+    ]
+  },
+  {
+    "id": "giant_bufo_ascendancy",
+    "name": "Titan Husbandry",
+    "description": "Increase Giant Bufo production by 4x",
+    "flavorText": "Feeding schedules are now coordinated by satellite.",
+    "category": "generator",
+    "cost": 2300000000000,
+    "iconPath": "./assets/images/upgrades/king-bufo.png",
+    "effects": [
+      {
+        "type": "generatorProduction",
+        "target": "giant_bufo",
+        "multiplier": 4
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "generatorCount",
+        "target": "giant_bufo",
+        "value": 70
+      }
+    ]
+  },
+  {
+    "id": "chromatic_bufo_mastery",
+    "name": "Full Spectrum Bloom",
+    "description": "Increase Chromatic Bufo production by 3x",
+    "flavorText": "Colors that don't have names yet are being invented in real time.",
+    "category": "generator",
+    "cost": 190000000000,
+    "iconPath": "./assets/images/upgrades/bufo-chefkiss-with-hat.png",
+    "effects": [
+      {
+        "type": "generatorProduction",
+        "target": "chromatic_bufo",
+        "multiplier": 3
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "generatorCount",
+        "target": "chromatic_bufo",
+        "value": 45
+      }
+    ]
+  },
+  {
+    "id": "chromatic_bufo_ascendancy",
+    "name": "Prismatic Cascade",
+    "description": "Increase Chromatic Bufo production by 4x",
+    "flavorText": "Looking directly at the pond is now inadvisable without eye protection.",
+    "category": "generator",
+    "cost": 3800000000000,
+    "iconPath": "./assets/images/upgrades/hypnobufo.png",
+    "effects": [
+      {
+        "type": "generatorProduction",
+        "target": "chromatic_bufo",
+        "multiplier": 4
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "generatorCount",
+        "target": "chromatic_bufo",
+        "value": 55
+      }
+    ]
+  },
+  {
+    "id": "canopy_bufo_mastery",
+    "name": "Canopy Infrastructure",
+    "description": "Increase Canopy Bufo production by 3x",
+    "flavorText": "Rope bridges, pulleys, and a surprisingly good coffee situation up there.",
+    "category": "generator",
+    "cost": 2000000000000,
+    "iconPath": "./assets/images/upgrades/up-and-to-the-bufo.png",
+    "effects": [
+      {
+        "type": "generatorProduction",
+        "target": "canopy_bufo",
+        "multiplier": 3
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "generatorCount",
+        "target": "canopy_bufo",
+        "value": 40
+      }
+    ]
+  },
+  {
+    "id": "canopy_bufo_ascendancy",
+    "name": "Arboreal Metropolis",
+    "description": "Increase Canopy Bufo production by 4x",
+    "flavorText": "The treetops have a skyline. There is rush hour.",
+    "category": "generator",
+    "cost": 57000000000000,
+    "iconPath": "./assets/images/upgrades/bufo-dapper.png",
+    "effects": [
+      {
+        "type": "generatorProduction",
+        "target": "canopy_bufo",
+        "multiplier": 4
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "generatorCount",
+        "target": "canopy_bufo",
+        "value": 50
+      }
+    ]
+  },
+  {
+    "id": "prosperity_bufo_mastery",
+    "name": "Compound Croaking",
+    "description": "Increase Prosperity Bufo production by 3x",
+    "flavorText": "Interest on interest on interest. The bufos have discovered finance.",
+    "category": "generator",
+    "cost": 13000000000000,
+    "iconPath": "./assets/images/upgrades/bufo-cash-money.png",
+    "effects": [
+      {
+        "type": "generatorProduction",
+        "target": "prosperity_bufo",
+        "multiplier": 3
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "generatorCount",
+        "target": "prosperity_bufo",
+        "value": 35
+      }
+    ]
+  },
+  {
+    "id": "prosperity_bufo_ascendancy",
+    "name": "Sovereign Bufo Fund",
+    "description": "Increase Prosperity Bufo production by 4x",
+    "flavorText": "Your pond is now too big to fail.",
+    "category": "generator",
+    "cost": 550000000000000,
+    "iconPath": "./assets/images/upgrades/shut-up-and-take-my-bufo.png",
+    "effects": [
+      {
+        "type": "generatorProduction",
+        "target": "prosperity_bufo",
+        "multiplier": 4
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "generatorCount",
+        "target": "prosperity_bufo",
+        "value": 45
+      }
+    ]
+  },
+  {
+    "id": "golden_bufo_mastery",
+    "name": "Gilded Assembly Line",
+    "description": "Increase Golden Bufo production by 3x",
+    "flavorText": "Midas would like a word, and also a job application.",
+    "category": "generator",
+    "cost": 8600000000000,
+    "iconPath": "./assets/images/upgrades/bufo-give-money.png",
+    "effects": [
+      {
+        "type": "generatorProduction",
+        "target": "golden_bufo",
+        "multiplier": 3
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "generatorCount",
+        "target": "golden_bufo",
+        "value": 25
+      }
+    ]
+  },
+  {
+    "id": "golden_bufo_ascendancy",
+    "name": "Bullion Reserve",
+    "description": "Increase Golden Bufo production by 4x",
+    "flavorText": "The vault has a vault. The inner vault also has a vault.",
+    "category": "generator",
+    "cost": 150000000000000,
+    "iconPath": "./assets/images/upgrades/bufo-iron-throne.png",
+    "effects": [
+      {
+        "type": "generatorProduction",
+        "target": "golden_bufo",
+        "multiplier": 4
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "generatorCount",
+        "target": "golden_bufo",
+        "value": 32
+      }
+    ]
+  },
+  {
+    "id": "cosmic_bufo_mastery",
+    "name": "Orbital Logistics",
+    "description": "Increase Cosmic Bufo production by 3x",
+    "flavorText": "Shipping lanes between three star systems, all carrying frogs.",
+    "category": "generator",
+    "cost": 19000000000000,
+    "iconPath": "./assets/images/upgrades/bufo-stargazing.png",
+    "effects": [
+      {
+        "type": "generatorProduction",
+        "target": "cosmic_bufo",
+        "multiplier": 3
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "generatorCount",
+        "target": "cosmic_bufo",
+        "value": 20
+      }
+    ]
+  },
+  {
+    "id": "cosmic_bufo_ascendancy",
+    "name": "Galactic Franchise",
+    "description": "Increase Cosmic Bufo production by 4x",
+    "flavorText": "There's a branch in every spiral arm now.",
+    "category": "generator",
+    "cost": 1500000000000000,
+    "iconPath": "./assets/images/upgrades/bufo-galaxy-brain.png",
+    "effects": [
+      {
+        "type": "generatorProduction",
+        "target": "cosmic_bufo",
+        "multiplier": 4
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "generatorCount",
+        "target": "cosmic_bufo",
+        "value": 30
+      }
+    ]
+  },
+  {
+    "id": "ancient_bufo_mastery",
+    "name": "Primordial Archives",
+    "description": "Increase Ancient Bufo production by 3x",
+    "flavorText": "Records going back to before there was anything to record.",
+    "category": "generator",
+    "cost": 55000000000000,
+    "iconPath": "./assets/images/upgrades/bufo-old.png",
+    "effects": [
+      {
+        "type": "generatorProduction",
+        "target": "ancient_bufo",
+        "multiplier": 3
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "generatorCount",
+        "target": "ancient_bufo",
+        "value": 16
+      }
+    ]
+  },
+  {
+    "id": "ancient_bufo_ascendancy",
+    "name": "Eon Custodianship",
+    "description": "Increase Ancient Bufo production by 4x",
+    "flavorText": "They remember the pond before it was a pond. They are not nostalgic about it.",
+    "category": "generator",
+    "cost": 3800000000000000,
+    "iconPath": "./assets/images/upgrades/bufo-has-read-enough-documentation-for-today.png",
+    "effects": [
+      {
+        "type": "generatorProduction",
+        "target": "ancient_bufo",
+        "multiplier": 4
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "generatorCount",
+        "target": "ancient_bufo",
+        "value": 25
+      }
+    ]
+  },
+  {
+    "id": "quantum_bufo_mastery",
+    "name": "Superposed Shifts",
+    "description": "Increase Quantum Bufo production by 3x",
+    "flavorText": "Every bufo works every shift simultaneously. Payroll is a nightmare.",
+    "category": "generator",
+    "cost": 120000000000000,
+    "iconPath": "./assets/images/upgrades/confused-math-bufo.png",
+    "effects": [
+      {
+        "type": "generatorProduction",
+        "target": "quantum_bufo",
+        "multiplier": 3
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "generatorCount",
+        "target": "quantum_bufo",
+        "value": 12
+      }
+    ]
+  },
+  {
+    "id": "quantum_bufo_ascendancy",
+    "name": "Entangled Workforce",
+    "description": "Increase Quantum Bufo production by 4x",
+    "flavorText": "Promote one, and somewhere across the universe another instantly gets a raise.",
+    "category": "generator",
+    "cost": 6700000000000000,
+    "iconPath": "./assets/images/upgrades/bufo-brain.png",
+    "effects": [
+      {
+        "type": "generatorProduction",
+        "target": "quantum_bufo",
+        "multiplier": 4
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "generatorCount",
+        "target": "quantum_bufo",
+        "value": 20
+      }
+    ]
+  },
+  {
+    "id": "nebula_bufo_mastery",
+    "name": "Stellar Nursery Lease",
+    "description": "Increase Nebula Bufo production by 3x",
+    "flavorText": "You are now renting out star formation as a service.",
+    "category": "generator",
+    "cost": 600000000000000,
+    "iconPath": "./assets/images/upgrades/bufo-universe.png",
+    "effects": [
+      {
+        "type": "generatorProduction",
+        "target": "nebula_bufo",
+        "multiplier": 3
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "generatorCount",
+        "target": "nebula_bufo",
+        "value": 10
+      }
+    ]
+  },
+  {
+    "id": "nebula_bufo_ascendancy",
+    "name": "Gas Giant Harvest",
+    "description": "Increase Nebula Bufo production by 4x",
+    "flavorText": "Whole nebulae, condensed into bufos. Physics is politely asking you to stop.",
+    "category": "generator",
+    "cost": 20000000000000000,
+    "iconPath": "./assets/images/upgrades/bufo-drifts-through-the-void.png",
+    "effects": [
+      {
+        "type": "generatorProduction",
+        "target": "nebula_bufo",
+        "multiplier": 4
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "generatorCount",
+        "target": "nebula_bufo",
+        "value": 17
+      }
+    ]
+  },
+  {
+    "id": "omega_bufo_mastery",
+    "name": "Terminal Convergence",
+    "description": "Increase Omega Bufo production by 3x",
+    "flavorText": "All roads lead here. All ponds, too.",
+    "category": "generator",
+    "cost": 3300000000000000,
+    "iconPath": "./assets/images/upgrades/bufo-offers-you-the-moon.png",
+    "effects": [
+      {
+        "type": "generatorProduction",
+        "target": "omega_bufo",
+        "multiplier": 3
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "generatorCount",
+        "target": "omega_bufo",
+        "value": 8
+      }
+    ]
+  },
+  {
+    "id": "omega_bufo_ascendancy",
+    "name": "Final Iteration",
+    "description": "Increase Omega Bufo production by 4x",
+    "flavorText": "There is no version after this one. They checked.",
+    "category": "generator",
+    "cost": 81000000000000000,
+    "iconPath": "./assets/images/upgrades/bufo-simba.png",
+    "effects": [
+      {
+        "type": "generatorProduction",
+        "target": "omega_bufo",
+        "multiplier": 4
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "generatorCount",
+        "target": "omega_bufo",
+        "value": 14
+      }
+    ]
+  },
+  {
+    "id": "singularity_bufo_mastery",
+    "name": "Accretion Discipline",
+    "description": "Increase Singularity Bufo production by 3x",
+    "flavorText": "Matter goes in. Bufos come out. Do not investigate the middle part.",
+    "category": "generator",
+    "cost": 42000000000000000,
+    "iconPath": "./assets/images/upgrades/bufo-goes-to-space.png",
+    "effects": [
+      {
+        "type": "generatorProduction",
+        "target": "singularity_bufo",
+        "multiplier": 3
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "generatorCount",
+        "target": "singularity_bufo",
+        "value": 8
+      }
+    ]
+  },
+  {
+    "id": "singularity_bufo_ascendancy",
+    "name": "Event Horizon Farming",
+    "description": "Increase Singularity Bufo production by 4x",
+    "flavorText": "You are harvesting a region of spacetime from which nothing returns. Except bufos.",
+    "category": "generator",
+    "cost": 590000000000000000,
+    "iconPath": "./assets/images/upgrades/bufo-starstruck.png",
+    "effects": [
+      {
+        "type": "generatorProduction",
+        "target": "singularity_bufo",
+        "multiplier": 4
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "generatorCount",
+        "target": "singularity_bufo",
+        "value": 13
       }
     ]
   }

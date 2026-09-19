@@ -81,13 +81,22 @@ export class UpgradeManager {
   ): Upgrade[] {
     const availableUpgrades: Upgrade[] = [];
     const purchasedUpgrades = this.getPurchasedUpgrades();
-    
+
+    // Read from state rather than reaching for AchievementManager, which would
+    // import gameCore and close an import cycle back to this file.
+    const unlockedAchievements: Record<string, boolean> = {};
+    for (const id of state.achievements?.unlocked ?? []) {
+      unlockedAchievements[id] = true;
+    }
+
     for (const upgrade of this.allUpgrades) {
       // Skip if already purchased
       if (purchasedUpgrades.includes(upgrade.id)) continue;
-      
+
       // Check if upgrade meets all unlock conditions
-      if (meetsUnlockConditions(upgrade, state.resources.totalBufos, generatorCounts)) {
+      if (meetsUnlockConditions(
+        upgrade, state.resources.totalBufos, generatorCounts, unlockedAchievements, purchasedUpgrades
+      )) {
         availableUpgrades.push(upgrade);
       }
     }
