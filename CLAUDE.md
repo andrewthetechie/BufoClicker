@@ -20,14 +20,18 @@ docker compose up -d dev site
 only). `:8080` = production build via nginx. `debugTools.help()` lists every
 debug helper (resources, generators, upgrades, prestige, golden bufo, boss).
 
-`dist/` has ended up root-owned before (an nginx/root build wrote into a
-bind-mounted host dir). If a `docker compose run --rm build` fails with
-`EACCES: permission denied, unlink ...`, that's why - clear it via a
-root container rather than `rm -rf` from the host:
+`dist/` and `node_modules/` have both ended up root-owned before - any
+one-off `docker run` without `--user` writes into the bind mount as root. If
+a `docker compose run --rm build` fails with `EACCES: permission denied,
+unlink ...`, that's why. Fix ownership from a root container rather than
+`rm -rf`-ing from the host:
 ```
 docker run --rm -v "$PWD":/app -w /app node:22-bookworm bash -lc \
-  "rm -rf /app/dist && mkdir -p /app/dist && chown 1000:1000 /app/dist"
+  "chown -R 1000:1000 /app/node_modules /app/dist"
 ```
+Only those two directories are ever affected (nothing git tracks), and both
+are regenerable. Pass `--user 1000:1000` on one-off `docker run`s that write
+to the repo to avoid creating the problem in the first place.
 
 ## Non-obvious bugs and fixes worth knowing about
 
