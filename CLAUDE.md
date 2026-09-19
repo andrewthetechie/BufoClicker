@@ -174,6 +174,20 @@ to the repo to avoid creating the problem in the first place.
   Any other one-shot `init()`-time read of persisted state should either poll
   the same way or hook `GAME_STARTED` (emitted after the save load
   completes), not assume `init()` timing.
+- **Achievements for one-off milestones use custom events, not state reads.**
+  `checkAchievementRequirement` gained `bossesDefeated` / `transcendences` /
+  `prestigePoints`, which read straight from state - fine for thresholds that
+  only ever grow (`bossesDefeated` deliberately sums `defeated.length +
+  lifetimeDefeats` so transcending can't un-earn it). But "beat *this* boss"
+  can't work that way: transcending clears `bosses.defeated`, so the id is
+  gone. Those go through `triggerCustomEvent()`, whose flags are one-way
+  latches that nothing resets - `AchievementManager` listens for
+  `BOSS_DEFEATED` / `GOLDEN_BUFO_COLLECTED` on the bus (listening rather than
+  importing the managers, which would close a cycle through `gameCore`) and
+  latches `boss_<id>` / `golden_bufo_caught`. Any new "did X ever happen"
+  achievement wants a custom event; any "how many X" wants a state field.
+  Note custom-event flags need restoring in `gameSave.loadGame()` via
+  `setCustomEvents()`, for the same init-order reason as `setClickCount()`.
 - **Boss progress is per-run, the boss multiplier is forever.**
   `state.bosses` has two fields for this: `defeated` (ids beaten in the
   current prestige run - drives the ladder in `getAvailableBoss()` and the

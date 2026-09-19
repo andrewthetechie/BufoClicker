@@ -294,6 +294,11 @@ export function loadGame(): boolean {
     
     // Set the click count in the achievement manager
     achievementManager.setClickCount(clickCount);
+
+    // Custom-event flags (beat a specific boss, caught a Golden Bufo) are
+    // one-way latches that achievements gate on, so they have to come back
+    // too - the manager read state before the save was loaded.
+    achievementManager.setCustomEvents(achievementState.customEvents);
     
     // Now silently restore previously unlocked achievements
     if (previouslyUnlockedAchievements.length > 0) {

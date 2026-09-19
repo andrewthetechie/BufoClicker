@@ -51,6 +51,9 @@ export enum RequirementType {
   ConsoleOpened = 'consoleOpened',        // Console opened (dev tools)
   UpgradeCount = 'upgradeCount',          // Number of upgrades purchased
   ExplorationCount = 'explorationCount',  // Number of explorations completed
+  BossesDefeated = 'bossesDefeated',      // Bosses beaten, across all runs
+  Transcendences = 'transcendences',      // Times prestiged
+  PrestigePoints = 'prestigePoints',      // Lifetime Bufoplier points
   CustomEvent = 'customEvent'             // Custom event triggered
 }
 
@@ -182,6 +185,9 @@ function mapRequirementTypeFromString(type: string): RequirementType {
     case 'consoleopened': return RequirementType.ConsoleOpened;
     case 'upgradecount': return RequirementType.UpgradeCount;
     case 'explorationcount': return RequirementType.ExplorationCount;
+    case 'bossesdefeated': return RequirementType.BossesDefeated;
+    case 'transcendences': return RequirementType.Transcendences;
+    case 'prestigepoints': return RequirementType.PrestigePoints;
     case 'customevent': return RequirementType.CustomEvent;
     default: return RequirementType.CustomEvent;
   }
@@ -220,6 +226,9 @@ export function checkAchievementRequirement(
     consoleOpened: boolean;
     upgradesPurchased: number;
     explorationsCompleted: number;
+    bossesDefeated: number;
+    transcendences: number;
+    prestigePoints: number;
     customEvents: Record<string, boolean>;
   }
 ): boolean {
@@ -250,7 +259,16 @@ export function checkAchievementRequirement(
       
     case RequirementType.ExplorationCount:
       return gameState.explorationsCompleted >= req.value;
-      
+
+    case RequirementType.BossesDefeated:
+      return gameState.bossesDefeated >= req.value;
+
+    case RequirementType.Transcendences:
+      return gameState.transcendences >= req.value;
+
+    case RequirementType.PrestigePoints:
+      return gameState.prestigePoints >= req.value;
+
     case RequirementType.CustomEvent:
       if (!req.target) return false;
       return gameState.customEvents[req.target] === true;

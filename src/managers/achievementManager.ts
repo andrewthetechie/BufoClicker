@@ -2,6 +2,7 @@
 import { getStateManager } from '../core/stateManager';
 import { getEventBus } from '../core/eventBus';
 import { getGameCore } from '../game/gameCore';
+import { BOSS_DEFEATED, GOLDEN_BUFO_COLLECTED } from '../core/eventTypes';
 import * as Logger from '../utils/logger';
 import { 
   Achievement, 
@@ -127,6 +128,21 @@ public initialize(silentLoad: boolean = false): void {
     // Track upgrades
     eventBus.on('UPGRADE_PURCHASED', (data: any) => {
       this.checkAchievementCategory(AchievementCategory.Special);
+    });
+
+    // Boss/golden-bufo milestones are recorded as custom events rather than
+    // read out of state, because state doesn't keep them: transcending clears
+    // bosses.defeated (so "beat the final boss" would become un-earnable) and
+    // nothing counts golden bufos at all. Custom events are persisted and
+    // never reset, which is exactly the semantics an achievement needs.
+    // Listening on the bus also avoids importing the managers here, which
+    // would close a cycle back through gameCore.
+    eventBus.on(BOSS_DEFEATED, (data: { boss: { id: string } }) => {
+      if (data?.boss?.id) this.triggerCustomEvent(`boss_${data.boss.id}`);
+    });
+
+    eventBus.on(GOLDEN_BUFO_COLLECTED, () => {
+      this.triggerCustomEvent('golden_bufo_caught');
     });
     
     // Track game ticks for periodic checking
@@ -284,6 +300,12 @@ public checkAllAchievements(): void {
     consoleOpened: this.consoleOpened,
     upgradesPurchased: state.upgrades.purchased.length,
     explorationsCompleted: state.explorer.explorationsCompleted,
+    // Lifetime, not this run: transcending clears bosses.defeated and banks
+    // the count in lifetimeDefeats (see models/boss.ts), and an achievement
+    // you've earned must never be un-earnable by prestiging.
+    bossesDefeated: (state.bosses?.defeated.length ?? 0) + (state.bosses?.lifetimeDefeats ?? 0),
+    transcendences: state.prestige?.transcendences ?? 0,
+    prestigePoints: state.prestige?.lifetimePoints ?? 0,
     customEvents: this.customEvents
   };
   
@@ -515,6 +537,18 @@ public silentUnlockAchievement(achievementId: string): boolean {
   }
   
   /**
+   * Restore custom-event flags from a save.
+   *
+   * Needed because `initialize()` (and so `loadFromState()`) runs before the
+   * save is read - see initialization.ts - so the manager latches the default
+   * empty state and nothing ever put the saved flags back. `loadGame()` calls
+   * this the same way it calls setClickCount().
+   */
+  public setCustomEvents(events: Record<string, boolean>): void {
+    this.customEvents = { ...events };
+  }
+
+  /**
    * Manually set click count (for loading saves)
    */
   public setClickCount(count: number): void {
@@ -526,8 +560,13 @@ public silentUnlockAchievement(achievementId: string): boolean {
    * Register a custom event occurred
    */
   public triggerCustomEvent(eventName: string): void {
+    if (this.customEvents[eventName]) return;
     this.customEvents[eventName] = true;
     this.checkAllAchievements();
+    // Persist even when nothing unlocked off the back of it - otherwise the
+    // flag only survives if it happened to trigger an unlock (which is what
+    // calls saveToState).
+    this.saveToState();
   }
     /**
    * Get the current custom events
