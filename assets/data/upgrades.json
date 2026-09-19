@@ -860,634 +860,724 @@
       }
     ]
   },
-    {
-      "id": "bufos_united",
-      "name": "Bufos United",
-      "description": "Increase all Canopy Bufo and Prosperity Bufo production by 3x",
-      "flavorText": "When the arboreal and prosperous bufo communities joined forces, their collaborative croaking created harmony that resonates through the whole ecosystem!",
-      "category": "generator",
-      "cost": 55000000,
-      "iconPath": "./assets/images/upgrades/bufo-simba.png",
-      "effects": [
-        {
-          "type": "generatorProduction",
-          "target": "canopy_bufo",
-          "multiplier": 3
-        },
-        {
-          "type": "generatorProduction",
-          "target": "prosperity_bufo",
-          "multiplier": 3
-        }
-      ],
-      "unlockConditions": [
-        {
-          "type": "generatorCount",
-          "target": "canopy_bufo",
-          "value": 15
-        },
-        {
-          "type": "generatorCount",
-          "target": "prosperity_bufo",
-          "value": 10
-        }
-      ]
-    },
-    {
-      "id": "chromatic_boost_2",
-      "name": "Iridescent Evolution",
-      "description": "Increase Chromatic Bufo production by 4x",
-      "flavorText": "Their skin now shimmers with colors beyond the visible spectrum. Scientists are baffled, bufos are productive, and your eyes may never be the same.",
-      "category": "generator",
-      "cost": 13000000,
-      "iconPath": "./assets/images/upgrades/hypnobufo.png",
-      "effects": [
-        {
-          "type": "generatorProduction",
-          "target": "chromatic_bufo",
-          "multiplier": 4
-        }
-      ],
-      "unlockConditions": [
-        {
-          "type": "generatorCount",
-          "target": "chromatic_bufo",
-          "value": 25
-        }
-      ]
-    },
-    {
-      "id": "global_production_3",
-      "name": "Bufo Enlightenment",
-      "description": "Increase all generator production by 50%",
-      "flavorText": "Your bufos have achieved spiritual awakening. Their transcendent state reveals the hidden connections in the universe - and improves productivity!",
-      "category": "global",
-      "cost": 500000000,
-      "iconPath": "./assets/images/upgrades/bufo-mindblown.png",
-      "effects": [
-        {
-          "type": "globalMultiplier",
-          "multiplier": 1.5
-        }
-      ],
-      "unlockConditions": [
-        {
-          "type": "totalBufos",
-          "value": 500000000
-        }
-      ]
-    },
-    {
-      "id": "cosmic_ancient_combo",
-      "name": "Stellar Ancients",
-      "description": "Increase Ancient Bufo production by 5x",
-      "flavorText": "Your ancient bufos have been infused with cosmic energy, creating a perfect blend of primordial wisdom and stellar power.",
-      "category": "generator",
-      "cost": 100000000000,
-      "iconPath": "./assets/images/upgrades/bufo-old.png",
-      "effects": [
-        {
-          "type": "generatorProduction",
-          "target": "ancient_bufo",
-          "multiplier": 5
-        }
-      ],
-      "unlockConditions": [
-        {
-          "type": "generatorCount",
-          "target": "cosmic_bufo",
-          "value": 10
-        },
-        {
-          "type": "generatorCount",
-          "target": "ancient_bufo",
-          "value": 5
-        }
-      ]
-    },
-    {
-      "id": "quantum_click",
-      "name": "Quantum Click Entanglement",
-      "description": "Increase click power by 50x",
-      "flavorText": "Your fingers now exist in multiple dimensions simultaneously. Each click resonates across the multiverse, amplifying its power beyond comprehension.",
-      "category": "click",
-      "cost": 100000000000,
-      "iconPath": "./assets/images/upgrades/bufo-brain.png",
-      "effects": [
-        {
-          "type": "clickMultiplier",
-          "multiplier": 50
-        }
-      ],
-      "unlockConditions": [
-        {
-          "type": "generatorCount",
-          "target": "quantum_bufo",
-          "value": 3
-        }
-      ]
-    },
-    {
-      "id": "stronger_clicks_6",
-      "name": "Nebular Overdrive",
-      "description": "Increase click power by 10x",
-      "flavorText": "Each click now carries the force of a collapsing star. The bufos aren't sure whether to applaud or flee.",
-      "category": "click",
-      "cost": 40000000000000,
-      "iconPath": "./assets/images/upgrades/bufo-drifts-through-the-void.png",
-      "effects": [
-        {
-          "type": "clickMultiplier",
-          "multiplier": 10
-        }
-      ],
-      "unlockConditions": [
-        {
-          "type": "totalBufos",
-          "value": 20000000000000
-        }
-      ]
-    },
-    {
-      "id": "omniscient_clicks",
-      "name": "Omniscient Tap",
-      "description": "Increase click power by 20x",
-      "flavorText": "You no longer click the bufo. You simply understand that it has already been clicked.",
-      "category": "click",
-      "cost": 1500000000000000,
-      "iconPath": "./assets/images/upgrades/bufo-starstruck.png",
-      "effects": [
-        {
-          "type": "clickMultiplier",
-          "multiplier": 20
-        }
-      ],
-      "unlockConditions": [
-        {
-          "type": "totalBufos",
-          "value": 800000000000000
-        }
-      ]
-    },
-    {
-      "id": "premium_prosperity",
-      "name": "Golden Prosperity",
-      "description": "Increase Prosperity Bufo production by 4x",
-      "flavorText": "Your prosperity bufos have learned financial secrets from their golden cousins, leading to unprecedented wealth generation strategies.",
-      "category": "generator",
-      "cost": 10000000000,
-      "iconPath": "./assets/images/upgrades/bufo-has-midas-touch.png",
-      "effects": [
-        {
-          "type": "generatorProduction",
-          "target": "prosperity_bufo",
-          "multiplier": 4
-        }
-      ],
-      "unlockConditions": [
-        {
-          "type": "generatorCount",
-          "target": "golden_bufo",
-          "value": 10
-        },
-        {
-          "type": "generatorCount",
-          "target": "prosperity_bufo",
-          "value": 20
-        }
-      ]
-    },
-    {
-      "id": "canopy_boost_2",
-      "name": "Rainforest Revolution",
-      "description": "Increase Canopy Bufo production by 4x",
-      "flavorText": "Your arboreal bufos have created elaborate cities among the branches. Their advanced treehouse technology has revolutionized high-altitude bufo production.",
-      "category": "generator",
-      "cost": 140000000,
-      "iconPath": "./assets/images/upgrades/bufo-monstera.png",
-      "effects": [
-        {
-          "type": "generatorProduction",
-          "target": "canopy_bufo",
-          "multiplier": 4
-        }
-      ],
-      "unlockConditions": [
-        {
-          "type": "generatorCount",
-          "target": "canopy_bufo",
-          "value": 25
-        }
-      ]
-    },
-    {
-      "id": "prosperity_boost_2",
-      "name": "Bufo Economics",
-      "description": "Increase Prosperity Bufo production by 3x",
-      "flavorText": "Your prosperity bufos have developed a complex economic theory that optimizes bufo yield. Their quarterly reports show record-breaking growth!",
-      "category": "generator",
-      "cost": 1500000000,
-      "iconPath": "./assets/images/upgrades/bufo-cash-money.png",
-      "effects": [
-        {
-          "type": "generatorProduction",
-          "target": "prosperity_bufo",
-          "multiplier": 3
-        }
-      ],
-      "unlockConditions": [
-        {
-          "type": "generatorCount",
-          "target": "prosperity_bufo",
-          "value": 25
-        }
-      ]
-    },
-    {
-      "id": "ancient_quantum_alliance",
-      "name": "Temporal Alliance",
-      "description": "Increase Quantum Bufo production by 4x",
-      "flavorText": "Ancient and quantum bufos have formed an alliance spanning all of space-time. This partnership defies the laws of physics in the most productive way possible.",
-      "category": "generator",
-      "cost": 500000000000,
-      "iconPath": "./assets/images/upgrades/bufo-brain.png",
-      "effects": [
-        {
-          "type": "generatorProduction",
-          "target": "quantum_bufo",
-          "multiplier": 4
-        }
-      ],
-      "unlockConditions": [
-        {
-          "type": "generatorCount",
-          "target": "ancient_bufo",
-          "value": 7
-        },
-        {
-          "type": "generatorCount",
-          "target": "quantum_bufo",
-          "value": 3
-        }
-      ]
-    },
-    {
-      "id": "super_clicker",
-      "name": "Bufo Rhythm",
-      "description": "Increase click power by 75x",
-      "flavorText": "Your clicking has reached a rhythmic perfection that resonates with the natural frequency of bufos everywhere. Each tap creates a symphony of production.",
-      "category": "click",
-      "cost": 750000000,
-      "iconPath": "./assets/images/upgrades/bufo-hahabusiness.png",
-      "effects": [
-        {
-          "type": "clickMultiplier",
-          "multiplier": 75
-        }
-      ],
-      "unlockConditions": [
-        {
-          "type": "upgrade",
-          "id": "stronger_clicks_4"
-        },
-        {
-          "type": "totalBufos",
-          "value": 200000000
-        }
-      ]
-    },
-    {
-      "id": "golden_boost_2",
-      "name": "Auric Amplification",
-      "description": "Increase Golden Bufo production by 3x",
-      "flavorText": "Your golden bufos now radiate with such brilliance that they require special sunglasses. Their golden aura turns even the most mundane pond into a treasure trove.",
-      "category": "generator",
-      "cost": 17000000000,
-      "iconPath": "./assets/images/upgrades/bufo-has-midas-touch.png",
-      "effects": [
-        {
-          "type": "generatorProduction",
-          "target": "golden_bufo",
-          "multiplier": 3
-        }
-      ],
-      "unlockConditions": [
-        {
-          "type": "generatorCount",
-          "target": "golden_bufo",
-          "value": 15
-        }
-      ]
-    },
-    {
-      "id": "cosmic_boost_2",
-      "name": "Galactic Gateway",
-      "description": "Increase Cosmic Bufo production by 3x",
-      "flavorText": "Your cosmic bufos have opened a stable wormhole to distant bufo galaxies. The interstellar bufo trade route is booming with activity!",
-      "category": "generator",
-      "cost": 170000000000,
-      "iconPath": "./assets/images/upgrades/bufo-galaxy-brain.png",
-      "effects": [
-        {
-          "type": "generatorProduction",
-          "target": "cosmic_bufo",
-          "multiplier": 3
-        }
-      ],
-      "unlockConditions": [
-        {
-          "type": "generatorCount",
-          "target": "cosmic_bufo",
-          "value": 10
-        }
-      ]
-    },
-    {
-      "id": "bufo_academy",
-      "name": "Bufo Academy",
-      "description": "Unlock special training for bufos, increasing their production by 3x",
-      "flavorText": "An elite educational institution where young bufos learn advanced bufo-production techniques. Graduation rates are high, but so are the standards.",
-      "category": "generator",
-      "cost": 75000000,
-      "iconPath": "./assets/images/upgrades/bufo-glasses.png",
-      "effects": [
-        {
-          "type": "generatorProduction",
-          "target": "bufo",
-          "multiplier": 3
-        }
-      ],
-      "unlockConditions": [
-        {
-          "type": "totalBufos",
-          "value": 75000000
-        }
-      ]
-    },
-    {
-      "id": "quantum_boost_2",
-      "name": "Schrödinger's Bufo",
-      "description": "Increase Quantum Bufo production by 3x",
-      "flavorText": "Your quantum bufos now exist in a superposition of both productive and extremely productive states. Upon observation, they're always extremely productive!",
-      "category": "generator",
-      "cost": 17000000000000,
-      "iconPath": "./assets/images/upgrades/bufo-brain.png",
-      "effects": [
-        {
-          "type": "generatorProduction",
-          "target": "quantum_bufo",
-          "multiplier": 3
-        }
-      ],
-      "unlockConditions": [
-        {
-          "type": "generatorCount",
-          "target": "quantum_bufo",
-          "value": 5
-        }
-      ]
-    },
-    {
-      "id": "ancient_boost_2",
-      "name": "Ancestral Awakening",
-      "description": "Increase Ancient Bufo production by 3x",
-      "flavorText": "Your ancient bufos have connected with spirits of bufo ancestors past. Their croaks now contain the echoes of a billion bufo generations.",
-      "category": "generator",
-      "cost": 1700000000000,
-      "iconPath": "./assets/images/upgrades/bufo-old.png",
-      "effects": [
-        {
-          "type": "generatorProduction",
-          "target": "ancient_bufo",
-          "multiplier": 3
-        }
-      ],
-      "unlockConditions": [
-        {
-          "type": "generatorCount",
-          "target": "ancient_bufo",
-          "value": 7
-        }
-      ]
-    },
-    {
-      "id": "global_production_4",
-      "name": "Bufo Utopia",
-      "description": "Increase all production by 2x",
-      "flavorText": "Your bufo society has reached a state of perfect harmony. The croaks of your bufos create a symphony of productivity that echoes through the ages.",
-      "category": "global",
-      "cost": 5000000000,
-      "iconPath": "./assets/images/upgrades/bufo-iron-throne.png",
-      "effects": [
-        {
-          "type": "globalMultiplier",
-          "multiplier": 2
-        }
-      ],
-      "unlockConditions": [
-        {
-          "type": "totalBufos",
-          "value": 5000000000
-        }
-      ]
-    },
-    {
-      "id": "tadpole_boost_4",
-      "name": "Quantum Leap",
-      "description": "Increase Bufo production by 10x",
-      "flavorText": "Your bufos have mastered the art of quantum hopping. They're now producing bufos in parallel universes, and the results are staggering!",
-      "category": "generator",
-      "cost": 100000000,
-      "iconPath": "./assets/images/upgrades/bufo-gives-star.png",
-      "effects": [
-        {
-          "type": "generatorProduction",
-          "target": "bufo",
-          "multiplier": 10
-        }
-      ],
-      "unlockConditions": [
-        {
-          "type": "generatorCount",
-          "target": "bufo",
-          "value": 100
-        }
-      ]
-    },
-    {
-      "id": "froglet_boost_4",
-      "name": "Froglet Frenzy",
-      "description": "Increase Bufo Froglet production by 10x",
-      "flavorText": "Your froglets have entered a state of hyper-productivity. They're producing bufos at an alarming rate, but the results are too good to question!",
-      "category": "generator",
-      "cost": 750000000,
-      "iconPath": "./assets/images/upgrades/bufo-gives-star.png",
-      "effects": [
-        {
-          "type": "generatorProduction",
-          "target": "froglet",
-          "multiplier": 10
-        }
-      ],
-      "unlockConditions": [
-        {
-          "type": "generatorCount",
-          "target": "froglet",
-          "value": 150
-        }
-      ]
-    },
-    {
-      "id": "nebula_bufo_boost_1",
-      "name": "Stellar Nursery",
-      "description": "Increase Nebula Bufo production by 2x",
-      "flavorText": "Newly formed bufos condense out of clouds of interstellar gas and dust, each one radiating a little brighter than the last.",
-      "category": "generator",
-      "cost": 22000000000000,
-      "iconPath": "./assets/images/upgrades/bufo-starstruck.png",
-      "effects": [
-        { "type": "generatorProduction", "target": "nebula_bufo", "multiplier": 2 }
-      ],
-      "unlockConditions": [
-        { "type": "generatorCount", "target": "nebula_bufo", "value": 1 }
-      ]
-    },
-    {
-      "id": "nebula_boost_2",
-      "name": "Supernova Croak",
-      "description": "Increase Nebula Bufo production by 3x",
-      "flavorText": "When a nebula bufo croaks loud enough, entire star systems reorganize themselves in response.",
-      "category": "generator",
-      "cost": 220000000000000,
-      "iconPath": "./assets/images/upgrades/bufo-goes-to-space.png",
-      "effects": [
-        { "type": "generatorProduction", "target": "nebula_bufo", "multiplier": 3 }
-      ],
-      "unlockConditions": [
-        { "type": "generatorCount", "target": "nebula_bufo", "value": 5 }
-      ]
-    },
-    {
-      "id": "quantum_nebula_synergy",
-      "name": "Wavefront Collapse",
-      "description": "Quantum Bufos boost Nebula Bufo production by 2x",
-      "flavorText": "Your quantum bufos have figured out exactly which parallel universe has the best stargazing, and they're sharing the coordinates.",
-      "category": "generator",
-      "cost": 640000000000,
-      "iconPath": "./assets/images/upgrades/bufo-universe.png",
-      "effects": [
-        { "type": "generatorProduction", "target": "nebula_bufo", "multiplier": 2 }
-      ],
-      "unlockConditions": [
-        { "type": "generatorCount", "target": "quantum_bufo", "value": 5 },
-        { "type": "generatorCount", "target": "nebula_bufo", "value": 2 }
-      ]
-    },
-    {
-      "id": "omega_bufo_boost_1",
-      "name": "Final Form",
-      "description": "Increase Omega Bufo production by 2x",
-      "flavorText": "There is nothing left to evolve into. This is simply what a bufo looks like at the end of everything.",
-      "category": "generator",
-      "cost": 290000000000000,
-      "iconPath": "./assets/images/upgrades/bufo-offers-you-the-moon.png",
-      "effects": [
-        { "type": "generatorProduction", "target": "omega_bufo", "multiplier": 2 }
-      ],
-      "unlockConditions": [
-        { "type": "generatorCount", "target": "omega_bufo", "value": 1 }
-      ]
-    },
-    {
-      "id": "omega_boost_2",
-      "name": "Omega Point",
-      "description": "Increase Omega Bufo production by 3x",
-      "flavorText": "All bufo timelines, from every dimension you've unlocked, converge on this single, magnificently productive point.",
-      "category": "generator",
-      "cost": 2900000000000000,
-      "iconPath": "./assets/images/upgrades/bufo-drifts-through-the-void.png",
-      "effects": [
-        { "type": "generatorProduction", "target": "omega_bufo", "multiplier": 3 }
-      ],
-      "unlockConditions": [
-        { "type": "generatorCount", "target": "omega_bufo", "value": 5 }
-      ]
-    },
-    {
-      "id": "nebula_omega_synergy",
-      "name": "Dimensional Starlight",
-      "description": "Nebula Bufos boost Omega Bufo production by 2x",
-      "flavorText": "Starlight from a billion nebulas leaks through the cracks between dimensions, feeding your transdimensional bufos.",
-      "category": "generator",
-      "cost": 8400000000000,
-      "iconPath": "./assets/images/upgrades/bufo-stargazing.png",
-      "effects": [
-        { "type": "generatorProduction", "target": "omega_bufo", "multiplier": 2 }
-      ],
-      "unlockConditions": [
-        { "type": "generatorCount", "target": "nebula_bufo", "value": 5 },
-        { "type": "generatorCount", "target": "omega_bufo", "value": 2 }
-      ]
-    },
-    {
-      "id": "singularity_bufo_boost_1",
-      "name": "Event Horizon",
-      "description": "Increase Singularity Bufo production by 2x",
-      "flavorText": "Past this point, not even bad puns can escape. Production only goes up from here.",
-      "category": "generator",
-      "cost": 3900000000000000,
-      "iconPath": "./assets/images/generators/bufo-increases-his-dimensionality-while-trapped-in-the-void.png",
-      "effects": [
-        { "type": "generatorProduction", "target": "singularity_bufo", "multiplier": 2 }
-      ],
-      "unlockConditions": [
-        { "type": "generatorCount", "target": "singularity_bufo", "value": 1 }
-      ]
-    },
-    {
-      "id": "singularity_boost_2",
-      "name": "Infinite Density",
-      "description": "Increase Singularity Bufo production by 3x",
-      "flavorText": "Your singularity bufos have compressed so much production potential into zero volume that the math has stopped making sense, in a good way.",
-      "category": "generator",
-      "cost": 39000000000000000,
-      "iconPath": "./assets/images/generators/bufo-unlocked-transdimensional-travel-while-in-the-void.png",
-      "effects": [
-        { "type": "generatorProduction", "target": "singularity_bufo", "multiplier": 3 }
-      ],
-      "unlockConditions": [
-        { "type": "generatorCount", "target": "singularity_bufo", "value": 5 }
-      ]
-    },
-    {
-      "id": "omega_singularity_synergy",
-      "name": "Gravitational Collapse",
-      "description": "Omega Bufos boost Singularity Bufo production by 2x",
-      "flavorText": "Your omega bufos willingly collapse into the singularity, adding their infinite potential to its already-infinite density.",
-      "category": "generator",
-      "cost": 112000000000000,
-      "iconPath": "./assets/images/upgrades/bufo-offers-you-the-moon.png",
-      "effects": [
-        { "type": "generatorProduction", "target": "singularity_bufo", "multiplier": 2 }
-      ],
-      "unlockConditions": [
-        { "type": "generatorCount", "target": "omega_bufo", "value": 5 },
-        { "type": "generatorCount", "target": "singularity_bufo", "value": 2 }
-      ]
-    },
-    {
-      "id": "global_production_5",
-      "name": "Cosmic Bufo Order",
-      "description": "Increase all production by 2.5x",
-      "flavorText": "Every bufo, from the humblest tadpole to the densest singularity, now hums in perfect unison. Reality itself takes notice.",
-      "category": "global",
-      "cost": 10000000000000,
-      "iconPath": "./assets/images/upgrades/bufo-universe.png",
-      "effects": [
-        { "type": "globalMultiplier", "multiplier": 2.5 }
-      ],
-      "unlockConditions": [
-        { "type": "totalBufos", "value": 10000000000000 }
-      ]
-    }
+  {
+    "id": "bufos_united",
+    "name": "Bufos United",
+    "description": "Increase all Canopy Bufo and Prosperity Bufo production by 3x",
+    "flavorText": "When the arboreal and prosperous bufo communities joined forces, their collaborative croaking created harmony that resonates through the whole ecosystem!",
+    "category": "generator",
+    "cost": 55000000,
+    "iconPath": "./assets/images/upgrades/bufo-simba.png",
+    "effects": [
+      {
+        "type": "generatorProduction",
+        "target": "canopy_bufo",
+        "multiplier": 3
+      },
+      {
+        "type": "generatorProduction",
+        "target": "prosperity_bufo",
+        "multiplier": 3
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "generatorCount",
+        "target": "canopy_bufo",
+        "value": 15
+      },
+      {
+        "type": "generatorCount",
+        "target": "prosperity_bufo",
+        "value": 10
+      }
+    ]
+  },
+  {
+    "id": "chromatic_boost_2",
+    "name": "Iridescent Evolution",
+    "description": "Increase Chromatic Bufo production by 4x",
+    "flavorText": "Their skin now shimmers with colors beyond the visible spectrum. Scientists are baffled, bufos are productive, and your eyes may never be the same.",
+    "category": "generator",
+    "cost": 13000000,
+    "iconPath": "./assets/images/upgrades/hypnobufo.png",
+    "effects": [
+      {
+        "type": "generatorProduction",
+        "target": "chromatic_bufo",
+        "multiplier": 4
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "generatorCount",
+        "target": "chromatic_bufo",
+        "value": 25
+      }
+    ]
+  },
+  {
+    "id": "global_production_3",
+    "name": "Bufo Enlightenment",
+    "description": "Increase all generator production by 50%",
+    "flavorText": "Your bufos have achieved spiritual awakening. Their transcendent state reveals the hidden connections in the universe - and improves productivity!",
+    "category": "global",
+    "cost": 500000000,
+    "iconPath": "./assets/images/upgrades/bufo-mindblown.png",
+    "effects": [
+      {
+        "type": "globalMultiplier",
+        "multiplier": 1.5
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "totalBufos",
+        "value": 500000000
+      }
+    ]
+  },
+  {
+    "id": "cosmic_ancient_combo",
+    "name": "Stellar Ancients",
+    "description": "Increase Ancient Bufo production by 5x",
+    "flavorText": "Your ancient bufos have been infused with cosmic energy, creating a perfect blend of primordial wisdom and stellar power.",
+    "category": "generator",
+    "cost": 100000000000,
+    "iconPath": "./assets/images/upgrades/bufo-old.png",
+    "effects": [
+      {
+        "type": "generatorProduction",
+        "target": "ancient_bufo",
+        "multiplier": 5
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "generatorCount",
+        "target": "cosmic_bufo",
+        "value": 10
+      },
+      {
+        "type": "generatorCount",
+        "target": "ancient_bufo",
+        "value": 5
+      }
+    ]
+  },
+  {
+    "id": "quantum_click",
+    "name": "Quantum Click Entanglement",
+    "description": "Increase click power by 50x",
+    "flavorText": "Your fingers now exist in multiple dimensions simultaneously. Each click resonates across the multiverse, amplifying its power beyond comprehension.",
+    "category": "click",
+    "cost": 100000000000,
+    "iconPath": "./assets/images/upgrades/bufo-brain.png",
+    "effects": [
+      {
+        "type": "clickMultiplier",
+        "multiplier": 50
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "generatorCount",
+        "target": "quantum_bufo",
+        "value": 3
+      }
+    ]
+  },
+  {
+    "id": "stronger_clicks_6",
+    "name": "Nebular Overdrive",
+    "description": "Increase click power by 10x",
+    "flavorText": "Each click now carries the force of a collapsing star. The bufos aren't sure whether to applaud or flee.",
+    "category": "click",
+    "cost": 40000000000000,
+    "iconPath": "./assets/images/upgrades/bufo-drifts-through-the-void.png",
+    "effects": [
+      {
+        "type": "clickMultiplier",
+        "multiplier": 10
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "totalBufos",
+        "value": 20000000000000
+      }
+    ]
+  },
+  {
+    "id": "omniscient_clicks",
+    "name": "Omniscient Tap",
+    "description": "Increase click power by 20x",
+    "flavorText": "You no longer click the bufo. You simply understand that it has already been clicked.",
+    "category": "click",
+    "cost": 1500000000000000,
+    "iconPath": "./assets/images/upgrades/bufo-starstruck.png",
+    "effects": [
+      {
+        "type": "clickMultiplier",
+        "multiplier": 20
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "totalBufos",
+        "value": 800000000000000
+      }
+    ]
+  },
+  {
+    "id": "premium_prosperity",
+    "name": "Golden Prosperity",
+    "description": "Increase Prosperity Bufo production by 4x",
+    "flavorText": "Your prosperity bufos have learned financial secrets from their golden cousins, leading to unprecedented wealth generation strategies.",
+    "category": "generator",
+    "cost": 10000000000,
+    "iconPath": "./assets/images/upgrades/bufo-has-midas-touch.png",
+    "effects": [
+      {
+        "type": "generatorProduction",
+        "target": "prosperity_bufo",
+        "multiplier": 4
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "generatorCount",
+        "target": "golden_bufo",
+        "value": 10
+      },
+      {
+        "type": "generatorCount",
+        "target": "prosperity_bufo",
+        "value": 20
+      }
+    ]
+  },
+  {
+    "id": "canopy_boost_2",
+    "name": "Rainforest Revolution",
+    "description": "Increase Canopy Bufo production by 4x",
+    "flavorText": "Your arboreal bufos have created elaborate cities among the branches. Their advanced treehouse technology has revolutionized high-altitude bufo production.",
+    "category": "generator",
+    "cost": 140000000,
+    "iconPath": "./assets/images/upgrades/bufo-monstera.png",
+    "effects": [
+      {
+        "type": "generatorProduction",
+        "target": "canopy_bufo",
+        "multiplier": 4
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "generatorCount",
+        "target": "canopy_bufo",
+        "value": 25
+      }
+    ]
+  },
+  {
+    "id": "prosperity_boost_2",
+    "name": "Bufo Economics",
+    "description": "Increase Prosperity Bufo production by 3x",
+    "flavorText": "Your prosperity bufos have developed a complex economic theory that optimizes bufo yield. Their quarterly reports show record-breaking growth!",
+    "category": "generator",
+    "cost": 1500000000,
+    "iconPath": "./assets/images/upgrades/bufo-cash-money.png",
+    "effects": [
+      {
+        "type": "generatorProduction",
+        "target": "prosperity_bufo",
+        "multiplier": 3
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "generatorCount",
+        "target": "prosperity_bufo",
+        "value": 25
+      }
+    ]
+  },
+  {
+    "id": "ancient_quantum_alliance",
+    "name": "Temporal Alliance",
+    "description": "Increase Quantum Bufo production by 4x",
+    "flavorText": "Ancient and quantum bufos have formed an alliance spanning all of space-time. This partnership defies the laws of physics in the most productive way possible.",
+    "category": "generator",
+    "cost": 500000000000,
+    "iconPath": "./assets/images/upgrades/bufo-brain.png",
+    "effects": [
+      {
+        "type": "generatorProduction",
+        "target": "quantum_bufo",
+        "multiplier": 4
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "generatorCount",
+        "target": "ancient_bufo",
+        "value": 7
+      },
+      {
+        "type": "generatorCount",
+        "target": "quantum_bufo",
+        "value": 3
+      }
+    ]
+  },
+  {
+    "id": "super_clicker",
+    "name": "Bufo Rhythm",
+    "description": "Increase click power by 75x",
+    "flavorText": "Your clicking has reached a rhythmic perfection that resonates with the natural frequency of bufos everywhere. Each tap creates a symphony of production.",
+    "category": "click",
+    "cost": 750000000,
+    "iconPath": "./assets/images/upgrades/bufo-hahabusiness.png",
+    "effects": [
+      {
+        "type": "clickMultiplier",
+        "multiplier": 75
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "upgrade",
+        "id": "stronger_clicks_4"
+      },
+      {
+        "type": "totalBufos",
+        "value": 200000000
+      }
+    ]
+  },
+  {
+    "id": "golden_boost_2",
+    "name": "Auric Amplification",
+    "description": "Increase Golden Bufo production by 3x",
+    "flavorText": "Your golden bufos now radiate with such brilliance that they require special sunglasses. Their golden aura turns even the most mundane pond into a treasure trove.",
+    "category": "generator",
+    "cost": 17000000000,
+    "iconPath": "./assets/images/upgrades/bufo-has-midas-touch.png",
+    "effects": [
+      {
+        "type": "generatorProduction",
+        "target": "golden_bufo",
+        "multiplier": 3
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "generatorCount",
+        "target": "golden_bufo",
+        "value": 15
+      }
+    ]
+  },
+  {
+    "id": "cosmic_boost_2",
+    "name": "Galactic Gateway",
+    "description": "Increase Cosmic Bufo production by 3x",
+    "flavorText": "Your cosmic bufos have opened a stable wormhole to distant bufo galaxies. The interstellar bufo trade route is booming with activity!",
+    "category": "generator",
+    "cost": 170000000000,
+    "iconPath": "./assets/images/upgrades/bufo-galaxy-brain.png",
+    "effects": [
+      {
+        "type": "generatorProduction",
+        "target": "cosmic_bufo",
+        "multiplier": 3
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "generatorCount",
+        "target": "cosmic_bufo",
+        "value": 10
+      }
+    ]
+  },
+  {
+    "id": "bufo_academy",
+    "name": "Bufo Academy",
+    "description": "Unlock special training for bufos, increasing their production by 3x",
+    "flavorText": "An elite educational institution where young bufos learn advanced bufo-production techniques. Graduation rates are high, but so are the standards.",
+    "category": "generator",
+    "cost": 75000000,
+    "iconPath": "./assets/images/upgrades/bufo-glasses.png",
+    "effects": [
+      {
+        "type": "generatorProduction",
+        "target": "bufo",
+        "multiplier": 3
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "totalBufos",
+        "value": 75000000
+      }
+    ]
+  },
+  {
+    "id": "quantum_boost_2",
+    "name": "Schr\u00f6dinger's Bufo",
+    "description": "Increase Quantum Bufo production by 3x",
+    "flavorText": "Your quantum bufos now exist in a superposition of both productive and extremely productive states. Upon observation, they're always extremely productive!",
+    "category": "generator",
+    "cost": 17000000000000,
+    "iconPath": "./assets/images/upgrades/bufo-brain.png",
+    "effects": [
+      {
+        "type": "generatorProduction",
+        "target": "quantum_bufo",
+        "multiplier": 3
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "generatorCount",
+        "target": "quantum_bufo",
+        "value": 5
+      }
+    ]
+  },
+  {
+    "id": "ancient_boost_2",
+    "name": "Ancestral Awakening",
+    "description": "Increase Ancient Bufo production by 3x",
+    "flavorText": "Your ancient bufos have connected with spirits of bufo ancestors past. Their croaks now contain the echoes of a billion bufo generations.",
+    "category": "generator",
+    "cost": 1700000000000,
+    "iconPath": "./assets/images/upgrades/bufo-old.png",
+    "effects": [
+      {
+        "type": "generatorProduction",
+        "target": "ancient_bufo",
+        "multiplier": 3
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "generatorCount",
+        "target": "ancient_bufo",
+        "value": 7
+      }
+    ]
+  },
+  {
+    "id": "global_production_4",
+    "name": "Bufo Utopia",
+    "description": "Increase all production by 2x",
+    "flavorText": "Your bufo society has reached a state of perfect harmony. The croaks of your bufos create a symphony of productivity that echoes through the ages.",
+    "category": "global",
+    "cost": 5000000000,
+    "iconPath": "./assets/images/upgrades/bufo-iron-throne.png",
+    "effects": [
+      {
+        "type": "globalMultiplier",
+        "multiplier": 2
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "totalBufos",
+        "value": 5000000000
+      }
+    ]
+  },
+  {
+    "id": "tadpole_boost_4",
+    "name": "Quantum Leap",
+    "description": "Increase Bufo production by 10x",
+    "flavorText": "Your bufos have mastered the art of quantum hopping. They're now producing bufos in parallel universes, and the results are staggering!",
+    "category": "generator",
+    "cost": 100000000,
+    "iconPath": "./assets/images/upgrades/bufo-gives-star.png",
+    "effects": [
+      {
+        "type": "generatorProduction",
+        "target": "bufo",
+        "multiplier": 10
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "generatorCount",
+        "target": "bufo",
+        "value": 100
+      }
+    ]
+  },
+  {
+    "id": "froglet_boost_4",
+    "name": "Froglet Frenzy",
+    "description": "Increase Bufo Froglet production by 10x",
+    "flavorText": "Your froglets have entered a state of hyper-productivity. They're producing bufos at an alarming rate, but the results are too good to question!",
+    "category": "generator",
+    "cost": 750000000,
+    "iconPath": "./assets/images/upgrades/bufo-gives-star.png",
+    "effects": [
+      {
+        "type": "generatorProduction",
+        "target": "froglet",
+        "multiplier": 10
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "generatorCount",
+        "target": "froglet",
+        "value": 150
+      }
+    ]
+  },
+  {
+    "id": "nebula_bufo_boost_1",
+    "name": "Stellar Nursery",
+    "description": "Increase Nebula Bufo production by 2x",
+    "flavorText": "Newly formed bufos condense out of clouds of interstellar gas and dust, each one radiating a little brighter than the last.",
+    "category": "generator",
+    "cost": 22000000000000,
+    "iconPath": "./assets/images/upgrades/bufo-starstruck.png",
+    "effects": [
+      {
+        "type": "generatorProduction",
+        "target": "nebula_bufo",
+        "multiplier": 2
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "generatorCount",
+        "target": "nebula_bufo",
+        "value": 1
+      }
+    ]
+  },
+  {
+    "id": "nebula_boost_2",
+    "name": "Supernova Croak",
+    "description": "Increase Nebula Bufo production by 3x",
+    "flavorText": "When a nebula bufo croaks loud enough, entire star systems reorganize themselves in response.",
+    "category": "generator",
+    "cost": 220000000000000,
+    "iconPath": "./assets/images/upgrades/bufo-goes-to-space.png",
+    "effects": [
+      {
+        "type": "generatorProduction",
+        "target": "nebula_bufo",
+        "multiplier": 3
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "generatorCount",
+        "target": "nebula_bufo",
+        "value": 5
+      }
+    ]
+  },
+  {
+    "id": "quantum_nebula_synergy",
+    "name": "Wavefront Collapse",
+    "description": "Quantum Bufos boost Nebula Bufo production by 2x",
+    "flavorText": "Your quantum bufos have figured out exactly which parallel universe has the best stargazing, and they're sharing the coordinates.",
+    "category": "generator",
+    "cost": 640000000000,
+    "iconPath": "./assets/images/upgrades/bufo-universe.png",
+    "effects": [
+      {
+        "type": "generatorProduction",
+        "target": "nebula_bufo",
+        "multiplier": 2
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "generatorCount",
+        "target": "quantum_bufo",
+        "value": 5
+      },
+      {
+        "type": "generatorCount",
+        "target": "nebula_bufo",
+        "value": 2
+      }
+    ]
+  },
+  {
+    "id": "omega_bufo_boost_1",
+    "name": "Final Form",
+    "description": "Increase Omega Bufo production by 2x",
+    "flavorText": "There is nothing left to evolve into. This is simply what a bufo looks like at the end of everything.",
+    "category": "generator",
+    "cost": 290000000000000,
+    "iconPath": "./assets/images/upgrades/bufo-offers-you-the-moon.png",
+    "effects": [
+      {
+        "type": "generatorProduction",
+        "target": "omega_bufo",
+        "multiplier": 2
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "generatorCount",
+        "target": "omega_bufo",
+        "value": 1
+      }
+    ]
+  },
+  {
+    "id": "omega_boost_2",
+    "name": "Omega Point",
+    "description": "Increase Omega Bufo production by 3x",
+    "flavorText": "All bufo timelines, from every dimension you've unlocked, converge on this single, magnificently productive point.",
+    "category": "generator",
+    "cost": 2900000000000000,
+    "iconPath": "./assets/images/upgrades/bufo-drifts-through-the-void.png",
+    "effects": [
+      {
+        "type": "generatorProduction",
+        "target": "omega_bufo",
+        "multiplier": 3
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "generatorCount",
+        "target": "omega_bufo",
+        "value": 5
+      }
+    ]
+  },
+  {
+    "id": "nebula_omega_synergy",
+    "name": "Dimensional Starlight",
+    "description": "Nebula Bufos boost Omega Bufo production by 2x",
+    "flavorText": "Starlight from a billion nebulas leaks through the cracks between dimensions, feeding your transdimensional bufos.",
+    "category": "generator",
+    "cost": 8400000000000,
+    "iconPath": "./assets/images/upgrades/bufo-stargazing.png",
+    "effects": [
+      {
+        "type": "generatorProduction",
+        "target": "omega_bufo",
+        "multiplier": 2
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "generatorCount",
+        "target": "nebula_bufo",
+        "value": 5
+      },
+      {
+        "type": "generatorCount",
+        "target": "omega_bufo",
+        "value": 2
+      }
+    ]
+  },
+  {
+    "id": "singularity_bufo_boost_1",
+    "name": "Event Horizon",
+    "description": "Increase Singularity Bufo production by 2x",
+    "flavorText": "Past this point, not even bad puns can escape. Production only goes up from here.",
+    "category": "generator",
+    "cost": 3900000000000000,
+    "iconPath": "./assets/images/generators/bufo-increases-his-dimensionality-while-trapped-in-the-void.png",
+    "effects": [
+      {
+        "type": "generatorProduction",
+        "target": "singularity_bufo",
+        "multiplier": 2
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "generatorCount",
+        "target": "singularity_bufo",
+        "value": 1
+      }
+    ]
+  },
+  {
+    "id": "singularity_boost_2",
+    "name": "Infinite Density",
+    "description": "Increase Singularity Bufo production by 3x",
+    "flavorText": "Your singularity bufos have compressed so much production potential into zero volume that the math has stopped making sense, in a good way.",
+    "category": "generator",
+    "cost": 39000000000000000,
+    "iconPath": "./assets/images/generators/bufo-unlocked-transdimensional-travel-while-in-the-void.png",
+    "effects": [
+      {
+        "type": "generatorProduction",
+        "target": "singularity_bufo",
+        "multiplier": 3
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "generatorCount",
+        "target": "singularity_bufo",
+        "value": 5
+      }
+    ]
+  },
+  {
+    "id": "omega_singularity_synergy",
+    "name": "Gravitational Collapse",
+    "description": "Omega Bufos boost Singularity Bufo production by 2x",
+    "flavorText": "Your omega bufos willingly collapse into the singularity, adding their infinite potential to its already-infinite density.",
+    "category": "generator",
+    "cost": 112000000000000,
+    "iconPath": "./assets/images/upgrades/bufo-offers-you-the-moon.png",
+    "effects": [
+      {
+        "type": "generatorProduction",
+        "target": "singularity_bufo",
+        "multiplier": 2
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "generatorCount",
+        "target": "omega_bufo",
+        "value": 5
+      },
+      {
+        "type": "generatorCount",
+        "target": "singularity_bufo",
+        "value": 2
+      }
+    ]
+  },
+  {
+    "id": "global_production_5",
+    "name": "Cosmic Bufo Order",
+    "description": "Increase all production by 2.5x",
+    "flavorText": "Every bufo, from the humblest tadpole to the densest singularity, now hums in perfect unison. Reality itself takes notice.",
+    "category": "global",
+    "cost": 10000000000000,
+    "iconPath": "./assets/images/upgrades/bufo-universe.png",
+    "effects": [
+      {
+        "type": "globalMultiplier",
+        "multiplier": 2.5
+      }
+    ],
+    "unlockConditions": [
+      {
+        "type": "totalBufos",
+        "value": 10000000000000
+      }
+    ]
+  }
 ]
