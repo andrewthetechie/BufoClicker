@@ -119,8 +119,14 @@ export function getAvailableBoss(
   return null; // all bosses defeated
 }
 
-/** Permanent multiplier from defeated bosses (>= 1). Defensive against a missing slice. */
+/**
+ * Permanent multiplier from defeated bosses (>= 1). Counts this run's defeats
+ * plus every previous run's, so transcending re-opens the ladder (and resets
+ * the background) without ever taking back a multiplier you already earned.
+ * Defensive against a missing slice.
+ */
 export function getBossMultiplier(state: Pick<GameState, 'bosses'> | undefined | null): number {
   const defeated = state?.bosses?.defeated ?? [];
-  return 1 + defeated.length * BOSS_BONUS_PER_DEFEAT;
+  const lifetime = state?.bosses?.lifetimeDefeats ?? 0;
+  return 1 + (defeated.length + lifetime) * BOSS_BONUS_PER_DEFEAT;
 }

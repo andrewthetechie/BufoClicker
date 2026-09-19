@@ -38,7 +38,7 @@ export const DEFAULT_GAME_STATE: GameState = {
     version: '1.0.0'
   },
   prestige: { ...DEFAULT_PRESTIGE_STATE },
-  bosses: { defeated: [] }
+  bosses: { defeated: [], lifetimeDefeats: 0 }
 };
 
 /**
@@ -149,7 +149,7 @@ export function updateState(currentState: GameState, updates: PartialGameState):
   // Update bosses
   if (updates.bosses) {
     newState.bosses = {
-      ...(newState.bosses ?? { defeated: [] }),
+      ...(newState.bosses ?? { defeated: [], lifetimeDefeats: 0 }),
       ...updates.bosses,
       defeated: updates.bosses.defeated
         ? [...updates.bosses.defeated]

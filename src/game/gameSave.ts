@@ -201,10 +201,13 @@ export function loadGame(): boolean {
       transcendences: savedPrestige.transcendences || 0
     };
 
-    // Defeated bosses are permanent, like prestige.
+    // Boss progress: `defeated` is per-prestige-run (drives the ladder and the
+    // background stage), `lifetimeDefeats` banks previous runs so the permanent
+    // multiplier survives a transcend.
     const savedBosses = (saveData.state as any).bosses || {};
     const bossState = {
-      defeated: Array.isArray(savedBosses.defeated) ? savedBosses.defeated : []
+      defeated: Array.isArray(savedBosses.defeated) ? savedBosses.defeated : [],
+      lifetimeDefeats: savedBosses.lifetimeDefeats || 0
     };
 
     const properState = {

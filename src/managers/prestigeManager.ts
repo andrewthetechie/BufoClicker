@@ -85,8 +85,14 @@ export class PrestigeManager {
     // Generators back to their pristine JSON defaults.
     const freshGenerators = structuredClone(INITIAL_GENERATORS) as Record<GeneratorType, GeneratorData>;
 
+    // Bank this run's boss defeats so their multiplier carries over, then clear
+    // the ladder so bosses are offered again and the background starts at stage 0.
+    const prevBosses = state.bosses ?? { defeated: [], lifetimeDefeats: 0 };
+    const bankedDefeats = (prevBosses.lifetimeDefeats ?? 0) + prevBosses.defeated.length;
+
     stateManager.setState({
       prestige: newPrestige,
+      bosses: { defeated: [], lifetimeDefeats: bankedDefeats },
       resources: {
         bufos: 0,
         totalBufos: 0,

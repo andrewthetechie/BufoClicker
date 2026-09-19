@@ -29,9 +29,14 @@ export interface PrestigeState {
   transcendences: number;
 }
 
-/** Clicker Boss progression - which bosses have been defeated (ever). */
+/** Clicker Boss progression. */
 export interface BossState {
+  /** Bosses beaten in the current prestige run. Cleared on transcend so the
+   *  ladder (and the per-stage background) starts over. */
   defeated: string[];
+  /** Bosses beaten in previous runs. Keeps their permanent multiplier alive
+   *  after `defeated` is cleared. */
+  lifetimeDefeats: number;
 }
 
 export interface GameSettings {
