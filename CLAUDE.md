@@ -394,21 +394,36 @@ off), and Golden Bufo's Click Frenzy, which is not normalised out at all -
 saving a x7 frenzy for a boss is a genuine strategy and the escape hatch for
 players who can't hit the raw click rate.
 
-Current click targets across the 30-second fight, and the rate they imply:
+Targets are set against a real human click rate of **4-8 clicks/sec**, and
+priced for sprite-chasing: `.boss-sprite` hops every `MOVE_INTERVAL_MS`
+(3,000ms) with a 0.4s glide, so ~15% of a 30-second fight goes on reacquiring
+it rather than clicking. That leaves ~25.5 effective seconds, which is what
+the "raw c/s" column below divides by - a target of 165 clicks is a 6.5 c/s
+ask, not 5.5.
 
-| rung | boss | clicks | clicks/sec |
-|---|---|---|---|
-| 1 | furious_froglet | 45 | 1.5 |
-| 2 | the_enraged_bufo | 70 | 2.3 |
-| 3 | bufo_dragon | 90 | 3.0 |
-| 4 | bufo_devil | 110 | 3.7 |
-| 5 | mega_bufo | 130 | 4.3 |
-| 6 | interdimensional_bufo | 155 | 5.2 |
-| 7 | omniscient_bufo | 180 | 6.0 |
+| rung | boss | clicks | raw c/s | vs. the 4-8 band |
+|---|---|---|---|---|
+| 1 | furious_froglet | 65 | 2.5 | below - a formality |
+| 2 | the_enraged_bufo | 90 | 3.5 | below |
+| 3 | bufo_dragon | 115 | 4.5 | bottom of band |
+| 4 | bufo_devil | 130 | 5.1 | mid |
+| 5 | mega_bufo | 140 | 5.5 | mid |
+| 6 | interdimensional_bufo | 155 | 6.1 | upper-mid |
+| 7 | omniscient_bufo | 165 | 6.5 | upper-mid |
+
+Nothing on the ladder requires a rate only the top of the band can sustain.
+An earlier pass topped out at 180 clicks, which looked like 6.0 c/s but is
+really 7.1 once the sprite overhead is counted - too close to the ceiling. A
+x7 Click Frenzy drops the final boss to under 1 c/s, which is the intended
+escape hatch rather than an oversight.
 
 Verified in headless Chrome by clicking every rung out at 0 / 100 / 700 /
 5,000 prestige points: each lands within one click of its target, every fight
 is winnable, and the spread across that prestige range is exactly 1.00x.
+Note that headless Chrome does not simulate the sprite chase at all - it
+calls `hit()` directly - so it proves the HP maths, not the ergonomics. The
+efficiency figure above is an estimate and is the thing most worth checking
+against a real player.
 
 Two traps when re-testing this by seeding state directly. Achievement
 `ClickBoost` rewards multiply `resources.clickMultiplier` *at unlock time*, so

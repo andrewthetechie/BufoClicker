@@ -38,12 +38,19 @@ export const BOSS_BONUS_PER_DEFEAT = 0.25; // +25% per boss
  * player is expected to have at that rung - the click-upgrade chain in
  * upgrades.json times the achievement ClickBoost rewards they'll have unlocked
  * by then - multiplied by how many clicks the fight should take. The targets
- * ramp from 45 clicks for the opener to 180 for the final boss, i.e. 1.5/sec
- * up to 6/sec across a 30-second fight.
+ * ramp from 65 clicks for the opener to 165 for the final boss.
  *
  * Prestige and previously-defeated bosses are deliberately NOT in that base
  * figure; `getBossHealth()` multiplies them back in at fight time. See its
  * note.
+ *
+ * The click targets are set against a real human rate of 4-8 clicks/sec, and
+ * priced for the fact that the sprite hops every MOVE_INTERVAL_MS with a 0.4s
+ * glide - roughly 15% of a 30-second fight goes on reacquiring it rather than
+ * clicking, leaving ~25.5 effective seconds. So the targets below need 2.5
+ * clicks/sec at the opener, rising to 6.5 for the final boss: the early rungs
+ * sit under the band as a formality, the back half sits inside it, and
+ * nothing requires a rate only the top of the band can hit.
  *
  * The last two bosses (interdimensional_bufo, omniscient_bufo) exist because
  * the native click-upgrade chain tops out at quantum_click, well before the
@@ -58,7 +65,7 @@ export const BOSSES: BossDefinition[] = [
     name: 'Furious Froglet',
     flavorText: "It's smaller than you, but it is FURIOUS about it.",
     threshold: 10_000,
-    baseHealth: 653,
+    baseHealth: 975,
     iconPath: './assets/images/bosses/bufo-very-angry.png'
   },
   {
@@ -66,7 +73,7 @@ export const BOSSES: BossDefinition[] = [
     name: 'The Enraged Bufo',
     flavorText: 'Every click you’ve ever made has led to this moment of pure rage.',
     threshold: 100_000_000,
-    baseHealth: 41_900,
+    baseHealth: 53_800,
     iconPath: './assets/images/bosses/bufo-enraged.png'
   },
   {
@@ -74,7 +81,7 @@ export const BOSSES: BossDefinition[] = [
     name: 'Bufo Dragon',
     flavorText: 'Legends spoke of a bufo that ascended beyond amphibian. This is it.',
     threshold: 5_000_000_000,
-    baseHealth: 30_300_000,
+    baseHealth: 38_700_000,
     iconPath: './assets/images/bosses/bufo-dragon.png'
   },
   {
@@ -82,7 +89,7 @@ export const BOSSES: BossDefinition[] = [
     name: 'Bufo Devil',
     flavorText: 'It offers you a deal. You should probably just click it instead.',
     threshold: 100_000_000_000,
-    baseHealth: 55_500_000,
+    baseHealth: 65_600_000,
     iconPath: './assets/images/bosses/bufo-devil.png'
   },
   {
@@ -90,7 +97,7 @@ export const BOSSES: BossDefinition[] = [
     name: 'MEGA BUFO',
     flavorText: 'The one all other bufos speak of in hushed croaks. Surely nothing tops this... right?',
     threshold: 10_000_000_000_000,
-    baseHealth: 6_560_000_000,
+    baseHealth: 7_070_000_000,
     iconPath: './assets/images/bosses/mega-bufo.png'
   },
   {
@@ -106,7 +113,7 @@ export const BOSSES: BossDefinition[] = [
     name: 'The Omniscient Bufo',
     flavorText: 'It already knows how this fight ends. Prove it wrong.',
     threshold: 2_000_000_000_000_000,
-    baseHealth: 1_820_000_000_000,
+    baseHealth: 1_670_000_000_000,
     iconPath: './assets/images/bosses/omniscient.png'
   }
 ];
