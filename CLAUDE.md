@@ -354,32 +354,86 @@ either trivial (if easy) or permanently unwinnable (if hard), since the
 player's click power literally cannot grow any further. Added two new
 click upgrades specifically to unstick this: `stronger_clicks_6` (10x,
 gates around the nebula/omega tiers) and `omniscient_clicks` (20x, gates
-after singularity unlocks), then calibrated the two new bosses' HP against
-the click power those upgrades unlock (same "~120 clicks in 30s" target used
-for the original ladder, computed by hand: `clickPower = clickMultiplier x
-(1 + defeatedCount x 0.25)`, `HP = clickPower x 120`). If you extend the
-ladder again, this is the pattern: a boss needs *both* a threshold past the
-previous one *and* a fresh click-power upgrade to grind toward, or it isn't
-a real checkpoint.
+after singularity unlocks). If you extend the ladder again, this is the
+pattern: a boss needs *both* a threshold past the previous one *and* a fresh
+click-power upgrade to grind toward, or it isn't a real checkpoint. See the
+balance section below for how HP is derived now - the original hand
+calibration (`clickPower = clickMultiplier x (1 + defeatedCount x 0.25)`,
+`HP = clickPower x 120`) was wrong and has been replaced.
+
+## Boss difficulty: why HP is scaled, not fixed
+
+Boss damage is `resources.clickPower`, which is
+`baseClickPower x clickMultiplier x prestige x bossBonus x clickFrenzy`. The
+original ladder calibrated HP against the click-*upgrade* chain alone, which
+left three multipliers unaccounted for - and one of them, prestige, varies by
+1000x between two players sitting on identical `totalBufos`. The result was
+that a player who had transcended even once one-shot every boss in the game,
+and the ladder was wildly uneven even on a fresh save (`bufo_dragon` needed
+1,672 clicks in a 30-second window while `mega_bufo`, the very next rung, died
+in 2).
+
+No fixed number can fix that, because the difficulty input is a variable the
+number can't see. So `boss.ts` splits it in two:
+
+- `BossDefinition.baseHealth` is the HP for a player with no prestige and no
+  previously-defeated bosses. It's derived, not guessed: the click power
+  expected at that rung (the click-upgrade chain in `upgrades.json` times the
+  achievement `ClickBoost` rewards unlocked by then) multiplied by how many
+  clicks the fight should take.
+- `getBossHealth(boss, state)` multiplies `baseHealth` back up by
+  `prestigeMultiplier x bossMultiplier` at fight time.
+
+Those two multipliers therefore cancel out of `HP / clickPower` exactly, so
+the clicks a fight demands is invariant to prestige - which is the whole
+point. What deliberately stays a real advantage: the click-upgrade chain
+(that *is* the ladder's progression axis - buying the next click upgrade is
+how you beat the next boss), achievement click boosts (baked into
+`baseHealth` at the rung where they're expected, so unlocking them early pays
+off), and Golden Bufo's Click Frenzy, which is not normalised out at all -
+saving a x7 frenzy for a boss is a genuine strategy and the escape hatch for
+players who can't hit the raw click rate.
+
+Current click targets across the 30-second fight, and the rate they imply:
+
+| rung | boss | clicks | clicks/sec |
+|---|---|---|---|
+| 1 | furious_froglet | 45 | 1.5 |
+| 2 | the_enraged_bufo | 70 | 2.3 |
+| 3 | bufo_dragon | 90 | 3.0 |
+| 4 | bufo_devil | 110 | 3.7 |
+| 5 | mega_bufo | 130 | 4.3 |
+| 6 | interdimensional_bufo | 155 | 5.2 |
+| 7 | omniscient_bufo | 180 | 6.0 |
+
+Verified in headless Chrome by clicking every rung out at 0 / 100 / 700 /
+5,000 prestige points: each lands within one click of its target, every fight
+is winnable, and the spread across that prestige range is exactly 1.00x.
+
+Two traps when re-testing this by seeding state directly. Achievement
+`ClickBoost` rewards multiply `resources.clickMultiplier` *at unlock time*, so
+(a) writing `clickMultiplier` yourself wipes whatever the achievements
+contributed and it is never re-applied, making bosses look ~45x too hard, and
+(b) leaving a delay after `setState` lets newly-unlocked achievements
+multiply on top of the value you just seeded, making them look ~2-3x too
+easy. Seed `clickMultiplier` to the *full* expected value (upgrades x
+achievements) and read `clickPower` in the same tick.
+
+If you add a rung, add `baseHealth` the same way: expected click power at that
+rung x a click target continuing the ramp. Don't bake prestige into it.
 
 ## Numbers that are first-pass and may need tuning
 
 None of these have been human-playtested, only verified to be *mechanically*
 correct (right math, right event flow, no crashes/errors):
 
-- Boss HP/thresholds in `src/models/boss.ts` (7-boss ladder, gated by
-  totalBufos thresholds, calibrated against the click-upgrade chain in
-  `upgrades.json`). Simulated pacing for bosses 1-5 looks good (boss1@~10min,
-  boss2@~2h25m, boss3@~4h29m, boss4@~5h44m, boss5@~8h38m). Bosses 6-7
+- Boss *thresholds* in `src/models/boss.ts` (which rung unlocks when).
+  Simulated pacing for bosses 1-5 looks good (boss1@~10min, boss2@~2h25m,
+  boss3@~4h29m, boss4@~5h44m, boss5@~8h38m). Bosses 6-7
   (`interdimensional_bufo` @ 50T totalBufos, `omniscient_bufo` @ 2 quadrillion)
-  were added specifically to cover the late-game stretch after
-  `nebula`/`omega`/`singularity` unlock, which previously had zero boss
-  content - see the ladder-extension note below for how they were
-  calibrated. Not wall-clock-simulated (that stretch would take many
-  simulated hours); verified only by seeding `resources.clickMultiplier`
-  directly in a headless-Chrome test and confirming each clears in
-  ~108-114 hits against a 120-hit target, sequential unlock ordering holds,
-  and `document.body.dataset.bossStage` reaches "7".
+  cover the late-game stretch after `nebula`/`omega`/`singularity` unlock and
+  are not wall-clock-simulated (that stretch would take many simulated hours).
+  Boss *HP* is no longer a first-pass guess - see the section below.
 - The late upgrade tiers (`<gen>_mastery` / `<gen>_ascendancy` in
   `upgrades.json`). Every generator used to stop offering upgrades far below
   the count players actually reach - the last chromatic gate was 25 owned

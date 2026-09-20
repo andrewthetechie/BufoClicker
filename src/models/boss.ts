@@ -9,6 +9,7 @@
  * untouched) - go upgrade your clicks and try again, no cooldown.
  */
 import { GameState } from '../core/types';
+import { getPrestigeMultiplier } from './prestige';
 
 export interface BossDefinition {
   id: string;
@@ -16,8 +17,13 @@ export interface BossDefinition {
   flavorText: string;
   /** Total bufos ever earned needed before this boss can be challenged. */
   threshold: number;
-  /** Health points - must be clicked to 0 within the fight duration. */
-  maxHealth: number;
+  /**
+   * Health at baseline - i.e. for a player with no prestige points and no
+   * previously-defeated bosses. The real HP of a fight is this run through
+   * `getBossHealth()`, which scales it by the passive multipliers the player
+   * is carrying. See the note on that function for why.
+   */
+  baseHealth: number;
   iconPath: string;
 }
 
@@ -28,10 +34,16 @@ export const BOSS_FIGHT_DURATION_MS = 30_000;
 export const BOSS_BONUS_PER_DEFEAT = 0.25; // +25% per boss
 
 /**
- * The boss ladder. Thresholds and HP are calibrated (roughly) against the
- * click-upgrade chain in upgrades.json so each boss is beatable once you've
- * bought the click upgrades available by that point, and a real grind if you
- * haven't. Treat these as a first pass - tune after playtesting.
+ * The boss ladder. `baseHealth` is derived, not guessed: it's the click power a
+ * player is expected to have at that rung - the click-upgrade chain in
+ * upgrades.json times the achievement ClickBoost rewards they'll have unlocked
+ * by then - multiplied by how many clicks the fight should take. The targets
+ * ramp from 45 clicks for the opener to 180 for the final boss, i.e. 1.5/sec
+ * up to 6/sec across a 30-second fight.
+ *
+ * Prestige and previously-defeated bosses are deliberately NOT in that base
+ * figure; `getBossHealth()` multiplies them back in at fight time. See its
+ * note.
  *
  * The last two bosses (interdimensional_bufo, omniscient_bufo) exist because
  * the native click-upgrade chain tops out at quantum_click, well before the
@@ -46,7 +58,7 @@ export const BOSSES: BossDefinition[] = [
     name: 'Furious Froglet',
     flavorText: "It's smaller than you, but it is FURIOUS about it.",
     threshold: 10_000,
-    maxHealth: 1_200,
+    baseHealth: 653,
     iconPath: './assets/images/bosses/bufo-very-angry.png'
   },
   {
@@ -54,7 +66,7 @@ export const BOSSES: BossDefinition[] = [
     name: 'The Enraged Bufo',
     flavorText: 'Every click you’ve ever made has led to this moment of pure rage.',
     threshold: 100_000_000,
-    maxHealth: 6_000,
+    baseHealth: 41_900,
     iconPath: './assets/images/bosses/bufo-enraged.png'
   },
   {
@@ -62,7 +74,7 @@ export const BOSSES: BossDefinition[] = [
     name: 'Bufo Dragon',
     flavorText: 'Legends spoke of a bufo that ascended beyond amphibian. This is it.',
     threshold: 5_000_000_000,
-    maxHealth: 2_250_000,
+    baseHealth: 30_300_000,
     iconPath: './assets/images/bosses/bufo-dragon.png'
   },
   {
@@ -70,7 +82,7 @@ export const BOSSES: BossDefinition[] = [
     name: 'Bufo Devil',
     flavorText: 'It offers you a deal. You should probably just click it instead.',
     threshold: 100_000_000_000,
-    maxHealth: 112_000_000,
+    baseHealth: 55_500_000,
     iconPath: './assets/images/bosses/bufo-devil.png'
   },
   {
@@ -78,7 +90,7 @@ export const BOSSES: BossDefinition[] = [
     name: 'MEGA BUFO',
     flavorText: 'The one all other bufos speak of in hushed croaks. Surely nothing tops this... right?',
     threshold: 10_000_000_000_000,
-    maxHealth: 225_000_000,
+    baseHealth: 6_560_000_000,
     iconPath: './assets/images/bosses/mega-bufo.png'
   },
   {
@@ -86,7 +98,7 @@ export const BOSSES: BossDefinition[] = [
     name: 'Interdimensional Bufo',
     flavorText: 'It rests atop the terrarium of existence, watching your entire pond like it were a fish tank.',
     threshold: 50_000_000_000_000,
-    maxHealth: 3_000_000_000,
+    baseHealth: 78_200_000_000,
     iconPath: './assets/images/bosses/terrarium.png'
   },
   {
@@ -94,7 +106,7 @@ export const BOSSES: BossDefinition[] = [
     name: 'The Omniscient Bufo',
     flavorText: 'It already knows how this fight ends. Prove it wrong.',
     threshold: 2_000_000_000_000_000,
-    maxHealth: 70_000_000_000,
+    baseHealth: 1_820_000_000_000,
     iconPath: './assets/images/bosses/omniscient.png'
   }
 ];
@@ -129,4 +141,44 @@ export function getBossMultiplier(state: Pick<GameState, 'bosses'> | undefined |
   const defeated = state?.bosses?.defeated ?? [];
   const lifetime = state?.bosses?.lifetimeDefeats ?? 0;
   return 1 + (defeated.length + lifetime) * BOSS_BONUS_PER_DEFEAT;
+}
+
+/**
+ * The real health of a fight against `boss` for the player in `state`.
+ *
+ * A fixed number cannot work here. Boss damage is `resources.clickPower`, which
+ * is `baseClickPower x clickMultiplier x prestige x bossBonus x clickFrenzy` -
+ * and two players sitting on the same `totalBufos` can differ by a factor of a
+ * thousand in that product depending on how often they've transcended. The
+ * original ladder was calibrated against the click-upgrade chain alone, so the
+ * moment a player prestiged even once, every boss became a one- or two-click
+ * kill.
+ *
+ * So the ladder normalises out the power the player did NOT earn by climbing
+ * the ladder itself:
+ *
+ *  - `prestige` is multiplied back into HP. Transcending is meant to speed up
+ *    production, not delete the click checkpoints.
+ *  - `bossBonus` is multiplied back in too. It counts lifetime defeats, so
+ *    without this a second-run player would restart the ladder already holding
+ *    a 2.75x head start over the numbers it was tuned for.
+ *
+ * What stays a real advantage, by design:
+ *
+ *  - The click-upgrade chain. That IS the ladder's progression axis - buying
+ *    the next click upgrade is exactly how you beat the next boss.
+ *  - Achievement ClickBoost rewards, which are baked into `baseHealth` at the
+ *    rung where they're expected, so unlocking them early pays off.
+ *  - Golden Bufo's Click Frenzy, which is not normalised out at all. Saving a
+ *    frenzy for a boss is a genuine (and deliberate) strategy.
+ *
+ * Health is read once when the fight starts, so a frenzy expiring mid-fight
+ * can't move the goalposts.
+ */
+export function getBossHealth(
+  boss: BossDefinition,
+  state: Pick<GameState, 'bosses' | 'prestige'> | undefined | null
+): number {
+  const passive = getPrestigeMultiplier(state) * getBossMultiplier(state);
+  return Math.max(1, Math.ceil(boss.baseHealth * passive));
 }

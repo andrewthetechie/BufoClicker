@@ -12,6 +12,7 @@ import {
   BossDefinition,
   BOSS_FIGHT_DURATION_MS,
   getAvailableBoss,
+  getBossHealth,
   getBossMultiplier
 } from '../models/boss';
 import * as Logger from '../utils/logger';
@@ -20,6 +21,11 @@ import { getGeneratorManager } from './generatorManager';
 export interface ActiveBossFight {
   boss: BossDefinition;
   health: number;
+  /** Health this fight started at - `boss.baseHealth` scaled for this player
+   *  by `getBossHealth()`. Read once at `startFight()` so nothing can move the
+   *  goalposts mid-fight; always use this rather than the definition's
+   *  `baseHealth` for HP bars and "x / y HP" readouts. */
+  maxHealth: number;
   remainingMs: number;
 }
 
@@ -56,6 +62,11 @@ export class BossManager {
     return this.fight;
   }
 
+  /** What `boss` would actually have to be clicked down from right now. */
+  public getScaledHealth(boss: BossDefinition): number {
+    return getBossHealth(boss, getStateManager().getState());
+  }
+
   public getMultiplier(): number {
     return getBossMultiplier(getStateManager().getState());
   }
@@ -70,11 +81,12 @@ export class BossManager {
     const boss = this.getAvailableBoss();
     if (!boss) return false;
 
-    this.fight = { boss, health: boss.maxHealth, remainingMs: BOSS_FIGHT_DURATION_MS };
+    const maxHealth = getBossHealth(boss, getStateManager().getState());
+    this.fight = { boss, health: maxHealth, maxHealth, remainingMs: BOSS_FIGHT_DURATION_MS };
     this.runTimer();
 
-    getEventBus().emit(BOSS_FIGHT_STARTED, { boss });
-    Logger.log(`Boss fight started: ${boss.name} (${boss.maxHealth} HP, ${BOSS_FIGHT_DURATION_MS / 1000}s)`);
+    getEventBus().emit(BOSS_FIGHT_STARTED, { boss, maxHealth });
+    Logger.log(`Boss fight started: ${boss.name} (${maxHealth} HP, ${BOSS_FIGHT_DURATION_MS / 1000}s)`);
     return true;
   }
 
@@ -90,7 +102,7 @@ export class BossManager {
     getEventBus().emit(BOSS_DAMAGED, {
       boss: this.fight.boss,
       health: this.fight.health,
-      maxHealth: this.fight.boss.maxHealth,
+      maxHealth: this.fight.maxHealth,
       damage: amount
     });
 

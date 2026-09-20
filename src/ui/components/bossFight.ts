@@ -115,7 +115,9 @@ export class BossFight {
         <div class="boss-banner__flavor">${boss.flavorText}</div>
       </div>
       <div class="boss-banner__actions">
-        <button type="button" class="boss-banner__fight">Fight! (${formatNumber(boss.maxHealth)} HP, 30s)</button>
+        <button type="button" class="boss-banner__fight">Fight! (${formatNumber(
+          getGameCore().getBossManager().getScaledHealth(boss)
+        )} HP, 30s)</button>
         <button type="button" class="boss-banner__later">Not yet</button>
       </div>
     `;
@@ -163,7 +165,9 @@ export class BossFight {
     this.healthFill = overlay.querySelector('.boss-health-bar__fill');
     this.healthText = overlay.querySelector('.boss-health-bar__text');
     this.timerText = overlay.querySelector('.boss-fight-hud__timer');
-    this.updateHealth(boss.maxHealth, boss.maxHealth);
+    const maxHealth = getGameCore().getBossManager().getActiveFight()?.maxHealth
+      ?? getGameCore().getBossManager().getScaledHealth(boss);
+    this.updateHealth(maxHealth, maxHealth);
     this.updateTimer(30_000);
 
     overlay.querySelector('.boss-fight-hud__retreat')!.addEventListener('click', () => {
