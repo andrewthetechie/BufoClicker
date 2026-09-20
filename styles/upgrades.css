@@ -94,25 +94,25 @@
   filter: grayscale(30%);
 }
 
-/* Purchase feedback animations */
-.purchase-success .upgrade-icon {
-  animation: pulse 0.3s ease;
+/* Purchase feedback. Same no-transform rule as the shop - see the comment on
+   `.building-item.purchase-success` in component.css. The icon is already
+   `position: relative`, so the overlay needs no extra setup; the shared
+   keyframes are declared once, in component.css. */
+.purchase-success .upgrade-icon::after,
+.purchase-error .upgrade-icon::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
 }
 
-.purchase-error .upgrade-icon {
-  animation: shake 0.5s ease;
+.purchase-success .upgrade-icon::after {
+  animation: purchase-flash 0.45s ease-out;
 }
 
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.1); }
-  100% { transform: scale(1); }
-}
-
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  20%, 60% { transform: translateX(-5px); }
-  40%, 80% { transform: translateX(5px); }
+.purchase-error .upgrade-icon::after {
+  animation: purchase-reject 0.5s ease-out;
 }
 
 /* Empty state styling */

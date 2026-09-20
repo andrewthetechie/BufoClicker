@@ -102,6 +102,25 @@ to the repo to avoid creating the problem in the first place.
   z-index does nothing against an ancestor's overflow. The flip side is that
   nothing constrains those effects any more, so `clampToViewport()` in
   `clickArea.ts` keeps the label on screen on a narrow phone.
+- **`@keyframes` names are global, and the last declaration wins.** `pulse`
+  was defined in three stylesheets at once - `component.css` (scale 1.03),
+  `animations.css` (1.5) and `upgrades.css` (1.1) - so `.purchase-success`,
+  which asked for the 1.03 defined right next to it, actually ran
+  upgrades.css's 1.1 because that file is imported later. Nothing warns about
+  this. `ripple` is still duplicated between `layout.css` and
+  `animations.css`, but with identical values, so it's harmless today. Give
+  new keyframes a component-prefixed name (`purchase-flash`, `boss-timer-
+  pulse`) rather than a generic one.
+- **Purchase feedback must not use `transform`.** `.building-item` sits inside
+  `.buildings-container`, which is `overflow-y: auto`; per the overflow rule
+  above, that makes overflow-x `auto` too. A `transform: scale()` on an item
+  spills past the container's content box, flashes a horizontal scrollbar and
+  - wherever scrollbars take up space instead of overlaying - re-lays-out
+  every row in the shop for the length of the animation, which is what "the
+  shop resizes when you buy" was. `.purchase-success` / `.purchase-error` are
+  now a fading `::after` overlay (background tint + inset ring); colour and
+  box-shadow don't contribute to scrollable overflow, so they can't reflow
+  anything. Any future in-list feedback wants the same shape.
 - **A full-screen fight overlay needs `pointer-events: auto` on itself, not
   just its children.** `.boss-fight-overlay` used to be `pointer-events: none`
   with only the sprite/HUD set to `auto` - visually it covered the screen but

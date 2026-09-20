@@ -54,6 +54,7 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   margin-bottom: var(--spacing-sm);
   transition: box-shadow 0.2s ease, transform 0.2s ease;
+  position: relative; /* containing block for the purchase-feedback overlay */
 }
 
 .building-item:hover {
@@ -319,25 +320,59 @@
   box-shadow: none;
 }
 
-/* Add feedback styles for purchase actions */
-.purchase-success {
-  animation: pulse 0.3s ease;
+/* Purchase feedback, which must never affect layout.
+   `.building-item` lives inside `.buildings-container`, which sets
+   `overflow-y: auto` - and per CSS that forces overflow-x to compute to
+   `auto` as well. A `transform: scale()` on an item therefore spills past the
+   container's content box, flashes a horizontal scrollbar, and (wherever
+   scrollbars take up space rather than overlaying) re-lays-out every row in
+   the shop for as long as the animation runs. That's the "shop resizes when
+   you buy" bug. Background colour and box-shadow don't contribute to
+   scrollable overflow, so a fading overlay can't reflow anything.
+
+   It was doubly wrong before: `@keyframes pulse` was declared in three
+   stylesheets at once - here at 1.03, `animations.css` at 1.5 and
+   `upgrades.css` at 1.1. Keyframe names are global and the last declaration
+   in source order wins, so the shop was silently running upgrades.css's 1.1,
+   a 10% jump rather than the 3% written here. Keyframe names now live in
+   exactly one file each; keep it that way. */
+.building-item.purchase-success::after,
+.building-item.purchase-error::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
 }
 
-.purchase-error {
-  animation: shake 0.5s ease;
+.building-item.purchase-success::after {
+  animation: purchase-flash 0.45s ease-out;
 }
 
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.03); }
-  100% { transform: scale(1); }
+.building-item.purchase-error::after {
+  animation: purchase-reject 0.5s ease-out;
 }
 
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  20%, 60% { transform: translateX(-5px); }
-  40%, 80% { transform: translateX(5px); }
+@keyframes purchase-flash {
+  0% {
+    background-color: rgba(76, 175, 80, 0.3);
+    box-shadow: inset 0 0 0 2px rgba(76, 175, 80, 0.85);
+  }
+  100% {
+    background-color: rgba(76, 175, 80, 0);
+    box-shadow: inset 0 0 0 2px rgba(76, 175, 80, 0);
+  }
+}
+
+@keyframes purchase-reject {
+  0% {
+    background-color: rgba(229, 57, 53, 0.26);
+    box-shadow: inset 0 0 0 2px rgba(229, 57, 53, 0.85);
+  }
+  100% {
+    background-color: rgba(229, 57, 53, 0);
+    box-shadow: inset 0 0 0 2px rgba(229, 57, 53, 0);
+  }
 }
 
 /* Generator category styling */
