@@ -1,3 +1,21 @@
+/* Import all style modules (must precede all rules per CSS @import spec) */
+@import './layout.css';
+@import './panel.css';
+@import './component.css';
+@import './resourceDisplay.css';
+@import './animations.css';
+@import './tooltip.css';
+@import './modal.css';
+@import './upgrades.css';
+@import './achievements.css';
+@import './productionStats.css';
+@import './statsModal.css';
+@import './prestige.css';
+@import './goldenBufo.css';
+@import './bosses.css';
+/* Must stay last - the phone layer overrides everything above it. */
+@import './mobile.css';
+
 /* Defining variables */
 :root {
     /* Color Variables */
@@ -64,23 +82,6 @@
     padding: 0;
   }
   
-  /* Import all style modules */
-  @import './layout.css';
-  @import './panel.css';
-  @import './component.css';
-  @import './resourceDisplay.css';
-  @import './animations.css';
-  @import './tooltip.css';
-  @import './modal.css';
-  @import './upgrades.css';
-  @import './achievements.css';
-  @import './productionStats.css';
-  @import './statsModal.css';
-  @import './prestige.css';
-  @import './goldenBufo.css';
-  @import './bosses.css';
-  /* Must stay last - the phone layer overrides everything above it. */
-  @import './mobile.css';
   /* Global styles */
   body {
     /* The actual background image lives on ::before (see bosses.css) so a

@@ -80,6 +80,18 @@
     -webkit-user-drag: none;
   }
 
+  @keyframes clickEmojiArc {
+    0% { transform: translate(0, 0) rotate(0); opacity: 1; }
+    50% { transform: translate(var(--half-x), var(--peak-y)) rotate(var(--half-r)); opacity: 1; }
+    100% { transform: translate(var(--full-x), 0) rotate(var(--full-r)); opacity: 0; }
+  }
+
+  .click-emoji-arc {
+    animation-name: clickEmojiArc;
+    animation-timing-function: linear;
+    animation-fill-mode: forwards;
+  }
+
   /* Click ripple effect */
   @keyframes ripple {
     0% { 

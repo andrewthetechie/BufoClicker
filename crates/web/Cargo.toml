@@ -1,0 +1,30 @@
+[package]
+name = "web"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+game = { path = "../game" }
+leptos = { version = "0.8", features = ["csr"] }
+console_error_panic_hook = "0.1"
+gloo-net = "0.6"
+gloo-timers = "0.3"
+serde = { workspace = true }
+serde_json = { workspace = true }
+wasm-bindgen = { workspace = true }
+js-sys = { workspace = true }
+web-sys = { workspace = true, features = [
+    "Window",
+    "Document",
+    "HtmlElement",
+    "Element",
+    "DomRect",
+    "DomTokenList",
+    "Storage",
+    "Event",
+    "EventTarget",
+    "MouseEvent",
+    "KeyboardEvent",
+    "Location",
+    "VisibilityState",
+] }

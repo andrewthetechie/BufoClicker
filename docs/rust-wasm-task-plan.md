@@ -178,4 +178,3 @@ T17 may start when all of these are true:
 5. Chrome, Firefox, desktop Safari, and iPhone Safari pass the recorded browser checks.
 
 T17 finishes when Rust replaces Node in the container workflow and CI. The Pages build passes the same tests, and repo instructions match the shipped build.
-

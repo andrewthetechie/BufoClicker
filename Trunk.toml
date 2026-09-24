@@ -1,0 +1,5 @@
+[build]
+target = "index.html"
+dist = "dist"
+# The GitHub Pages project site lives under /BufoClicker/.
+public_url = "/BufoClicker/"

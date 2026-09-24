@@ -4,11 +4,11 @@
 #   docker compose run --rm build   # write a production build into ./dist
 #   docker compose up site      # serve the production build on http://localhost:8080
 #
-# Everything Node-related runs inside these containers; nothing is installed on
+# Everything Rust-related runs inside these containers; nothing is installed on
 # the host.
 
 services:
-  # Hot-reloading development server (webpack-dev-server).
+  # Hot-reloading development server (Trunk).
   dev:
     build:
       context: .
@@ -16,22 +16,31 @@ services:
     ports:
       - "9000:9000"
     volumes:
-      # Live-mount the source for hot reload; keep the image's node_modules
-      # (in a named volume, so the container's deps never touch the host).
+      # Live-mount the source for hot reload; keep the container's cargo
+      # target in a named volume so its deps never touch the host.
       - .:/app
-      - bufo_node_modules:/app/node_modules
-    command: npm run dev
+      - bufo_cargo_target:/app/target
+    command: trunk serve --address 0.0.0.0 --port 9000
 
-  # One-shot production build. Output lands in ./dist on the host (owned by
-  # uid 1000, which matches a typical single-user host account).
+  # One-shot production build. Output lands in ./dist on the host.
   build:
     build:
       context: .
-      target: dev
+      target: rust-toolchain
     volumes:
       - .:/app
-      - bufo_node_modules:/app/node_modules
-    command: npm run build
+      - bufo_cargo_target:/app/target
+    command: trunk build --release --public-url /BufoClicker/
+
+  # Alias kept so the pre-cutover `build-rust` command name still works.
+  build-rust:
+    build:
+      context: .
+      target: rust-toolchain
+    volumes:
+      - .:/app
+      - bufo_cargo_target:/app/target
+    command: trunk build --release --public-url /BufoClicker/
 
   # Serve the already-built ./dist with nginx.
   site:
@@ -40,6 +49,9 @@ services:
       target: runtime
     ports:
       - "8080:80"
+    volumes:
+      - ./dist:/usr/share/nginx/html:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
 
 volumes:
-  bufo_node_modules:
+  bufo_cargo_target:

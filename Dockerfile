@@ -4,44 +4,45 @@
 ## BufoClicker – container image
 ##
 ## Targets:
-##   dev     -> hot-reloading webpack-dev-server (used by `docker compose up dev`)
+##   dev     -> hot-reloading Trunk dev server (used by `docker compose up dev`)
 ##   build   -> produces the static site in /app/dist
 ##   runtime -> tiny nginx image serving the built site (default target)
 ##
 
 # ---------------------------------------------------------------------------
-# Shared base with dependencies installed
+# Rust + WASM toolchain (pinned compiler, target, and Trunk release).
 # ---------------------------------------------------------------------------
-FROM node:22-bookworm-slim AS deps
+FROM rust:1.93.1-bookworm AS rust-toolchain
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        pkg-config libssl-dev ca-certificates curl \
+    && rm -rf /var/lib/apt/lists/*
+RUN rustup target add wasm32-unknown-unknown
+# Prebuilt pinned Trunk release (far faster than compiling ~300 crates).
+# `uname -m` (aarch64 / x86_64) matches trunk's release asset names.
+RUN curl -fsSL "https://github.com/trunk-rs/trunk/releases/download/v0.21.14/trunk-$(uname -m)-unknown-linux-gnu.tar.gz" \
+    | tar xz -C /usr/local/bin
 WORKDIR /app
-COPY package.json package-lock.json ./
-RUN npm ci --no-audit --no-fund
 
 # ---------------------------------------------------------------------------
-# Toolchain image (dev server + one-off build/lint/audit commands).
-# Runs as the unprivileged `node` user (uid 1000) so files written back to a
-# bind-mounted host directory (e.g. ./dist) stay owned by a normal user.
+# Development server (hot-reloading Trunk on :9000).
 # ---------------------------------------------------------------------------
-FROM deps AS dev
-WORKDIR /app
+FROM rust-toolchain AS dev
 COPY . .
-RUN chown -R node:node /app
-USER node
 EXPOSE 9000
-CMD ["npm", "run", "dev"]
+CMD ["trunk", "serve", "--address", "0.0.0.0", "--port", "9000"]
 
 # ---------------------------------------------------------------------------
 # Production build -> /app/dist
 # ---------------------------------------------------------------------------
-FROM deps AS build
-WORKDIR /app
+FROM rust-toolchain AS build
 COPY . .
-RUN npm run build
+RUN trunk build --release --public-url /BufoClicker/
 
 # ---------------------------------------------------------------------------
-# Runtime: serve the static bundle with nginx
+# Runtime: serve the static bundle with nginx under /BufoClicker/ (the Pages
+# project path), with a root redirect.
 # ---------------------------------------------------------------------------
 FROM nginx:1.27-alpine AS runtime
 COPY --from=build /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
-# nginx's default config already serves /usr/share/nginx/html with index.html

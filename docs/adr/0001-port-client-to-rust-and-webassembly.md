@@ -54,4 +54,3 @@ The rewrite adds Rust browser bindings and a WASM download before the game UI st
 - [Trunk assets and public URL](https://trunk-rs.github.io/trunk/guide/assets/index.html)
 - [HTML Standard: local storage and origins](https://html.spec.whatwg.org/multipage/webstorage.html)
 - [MDN: `visibilitychange`](https://developer.mozilla.org/en-US/docs/Web/API/Document/visibilitychange_event) and [`beforeunload` limitations](https://developer.mozilla.org/en-US/docs/Web/API/Window/beforeunload_event)
-

@@ -120,4 +120,3 @@ At cutover, switch `dist/` and the Pages workflow. Remove TypeScript and Node bu
 - [Thirtyfour Rust WebDriver client](https://github.com/stevepryde/thirtyfour)
 - [HTML Standard local storage](https://html.spec.whatwg.org/multipage/webstorage.html)
 - [MDN: `visibilitychange`](https://developer.mozilla.org/en-US/docs/Web/API/Document/visibilitychange_event) and [`beforeunload` limitations](https://developer.mozilla.org/en-US/docs/Web/API/Window/beforeunload_event)
-

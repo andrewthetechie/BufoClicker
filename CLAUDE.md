@@ -1,479 +1,129 @@
 # CLAUDE.md
 
 Working notes for Claude Code (or a human) picking this repo back up. This
-file tracks decisions and non-obvious context - see `README.md` for how to
+file tracks decisions and non-obvious context — see `README.md` for how to
 actually run/build/deploy, and `git log` for chronological history.
 
 ## Hard constraint: Docker-only
 
-The user has no Node toolchain on their host machine and wants none. **Every**
-`npm`/`node`/`npx` command for this repo must run inside a container - use the
-committed `Dockerfile` + `docker-compose.yml`, or a one-off
-`docker run --rm -v "$PWD":/app -w /app node:22-bookworm ...`. Never suggest
-installing Node locally. `node_modules/` and `dist/` are git-ignored and
+The user has no toolchain on their host machine and wants none. **Every**
+`cargo`/`trunk`/`rustc` command for this repo must run inside a container —
+use the committed `Dockerfile` + `docker-compose.yml`, or a one-off
+`docker run --rm -v "$PWD":/app -w /app rust:1.93.1-bookworm ...`. Never
+suggest installing Rust locally. `target/` and `dist/` are git-ignored and
 expected to be absent/regenerable, not committed.
 
 ```
-docker compose up -d dev site
+docker compose up dev site
 ```
-`:9000` = webpack-dev-server with `window.debugTools` in console (dev-mode
-only). `:8080` = production build via nginx. `debugTools.help()` lists every
-debug helper (resources, generators, upgrades, prestige, golden bufo, boss).
+`:9000` = Trunk dev server. `:8080` = production build via nginx.
 
-`dist/` and `node_modules/` have both ended up root-owned before - any
-one-off `docker run` without `--user` writes into the bind mount as root. If
-a `docker compose run --rm build` fails with `EACCES: permission denied,
-unlink ...`, that's why. Fix ownership from a root container rather than
-`rm -rf`-ing from the host:
+`dist/` and `target/` can end up root-owned when a one-off `docker run`
+writes into the bind mount as root. If a `docker compose run --rm build`
+fails with `EACCES: permission denied, unlink ...`, that's why. Fix ownership
+from a root container rather than `rm -rf`-ing from the host:
 ```
-docker run --rm -v "$PWD":/app -w /app node:22-bookworm bash -lc \
-  "chown -R 1000:1000 /app/node_modules /app/dist"
+docker run --rm -v "$PWD":/app -w /app rust:1.93.1-bookworm bash -lc \
+  "chown -R 1000:1000 /app/target /app/dist"
 ```
 Only those two directories are ever affected (nothing git tracks), and both
-are regenerable. Pass `--user 1000:1000` on one-off `docker run`s that write
-to the repo to avoid creating the problem in the first place.
+are regenerable.
 
-## Non-obvious bugs and fixes worth knowing about
+## Architecture
 
-- **Unaffordable buy buttons must stay clickable.** Setting the native
-  `disabled` DOM property on a shop/upgrade button silently swallows clicks
-  with no feedback - this was the root cause behind GH #1 ("Golden Bufo does
-  not work") and #2 ("Bufo Academy Upgrade doesn't work"). `shopItem.ts` /
-  `upgradeItem.ts` keep the button clickable and let the manager's real
-  success/fail response drive shake/flash feedback instead. Relatedly,
-  purchases and the game state save on `pagehide`/`beforeunload`/tab-hidden
-  (see `initialization.ts`) - a bare in-memory purchase used to vanish on
-  refresh.
-- **Don't gate clicks with a cooldown or a rAF-driven animation latch.**
-  `clickArea.ts` used to have a 50ms hard click cooldown, plus a squish
-  animation that set a `dataset.animating` flag cleared by
-  `requestAnimationFrame` - which never fires in a backgrounded tab, so the
-  flag (and clicking) could get stuck forever. The squish is now a plain
-  CSS-transition (self-healing, nothing to latch); `pulse()` in
-  `animationUtils.ts` also has a failsafe timeout defensively even though
-  `clickArea.ts` no longer calls it.
-- **Number formatting must force `'en-US'`.** Bare `.toLocaleString()` is
-  locale-dependent (can render "1.000" for "1,000" depending on runtime
-  locale) and unclamped huge numbers render as raw scientific notation.
-  `numberUtils.ts`'s `formatNumber`/`formatNumberWithPrecision` force
-  `'en-US'` and clamp/format the K/M/B-suffix path explicitly.
+The game client was ported from TypeScript to Rust/WASM/Leptos (see
+`docs/adr/0001-port-client-to-rust-and-webassembly.md`,
+`docs/rust-wasm-proposal.md`, `docs/rust-wasm-task-plan.md`). The Rust side is
+a Cargo workspace:
+
+- `crates/game/` — **pure Rust, no browser deps.** The authoritative game
+  state (`state.rs`), economy (`economy.rs`), upgrades (`upgrades.rs`),
+  achievements (`achievements.rs`), prestige (`prestige.rs`), boss ladder
+  (`boss.rs`), Golden Bufo (`golden.rs`), number formatting (`number.rs`),
+  catalog parsing/validation (`catalog.rs`), and save v2 + legacy migration
+  (`save.rs`). Everything here is testable natively with `cargo test -p game`.
+- `crates/web/` — **Leptos views + browser adapters.** `main.rs` (load flow),
+  `game_view.rs` (the game UI), `boss_ui.rs`, `golden_ui.rs`,
+  `console_detection.rs`, `fetch.rs` (catalog fetch against `document.baseURI`),
+  `storage.rs` (localStorage v2/legacy + export/import codec).
+
+**One authoritative state model, one calculation path.** Derived values (click
+power, production, generator costs) are computed on demand from canonical
+state — never stored — so they cannot drift. The TS triplication
+(`types.ts` / `stateUtils.ts` / `gameState.ts`) is gone.
+
+**Generators are keyed by string id from `generators.json`, not an enum.**
+The old `GeneratorType` enum drifted out of sync with the JSON and quietly
+broke debug seeding. There is no enum to drift now.
+
+## Non-obvious decisions worth knowing (now enforced by native tests)
+
+These are the bugs/decisions from the TypeScript era that the port preserves
+or deliberately changes. Each is pinned by a `#[test]` in `crates/game`.
+
+- **Unaffordable buy buttons must stay clickable.** Setting a native `disabled`
+  DOM property swallows clicks with no feedback. The Rust UI keeps buttons
+  clickable and relies on the purchase outcome (success/failure) for feedback.
 - **Only `clickMultiplier`, `generatorProduction`, and `globalMultiplier` are
-  live upgrade effect types.** `upgradeManager.ts`'s `applySingleEffect`
-  switch silently no-ops (`default: Logger.warn`) on anything else - this bit
-  `ribbit_resonance`, which used an unhandled `clickBpsBonus` type and cost
-  100,000 bufos for nothing. Fixed by repointing it to `clickMultiplier`
-  instead of building a new temporary-buff mechanic for one upgrade. If you
-  add a new effect type to `upgrades.json`, it needs a case in that switch or
-  it'll fail the same way, silently.
-- **An unrecognised unlock-condition type used to silently *pass*.**
-  `upgrades.json` has conditions like `{"type": "upgrade", "id": "..."}`
-  (prerequisite upgrade), but `mapUnlockConditionTypeFromString` had no case
-  for them, so they fell through to `default: TotalBufos` - with `value`
-  undefined, `totalBufos < undefined` is `false`, the condition "passed", and
-  three upgrades (`ribbit_resonance`, `metamorphosis_mastery`, `super_clicker`)
-  ignored their prerequisites entirely. Now a real `Upgrade` condition type,
-  and the `default` branch returns something *always unmet* plus a warning
-  rather than something always met. If you add a condition type to the JSON it
-  still needs a case in both that mapper and `meetsUnlockConditions`.
-- **`GeneratorType` drifts out of sync with `generators.json`.** The enum in
-  `models/generators.ts` is hand-maintained and was missing `nebula_bufo` /
-  `omega_bufo` / `singularity_bufo` for a whole session. Nothing in the game
-  enumerates it at runtime (it's structural typing plus `debugTools`), so the
-  only visible symptom was `debugTools.generator_debug.give()` refusing the
-  three newest tiers - which quietly invalidates any test that seeds state
-  through it. Add new generators to the enum at the same time as the JSON.
-- **Result modals must survive the click that was already in flight.** The
-  boss victory/defeat modals open the instant a fight ends, i.e. while the
-  player is still spamming clicks, and `closeOnBackdrop: true` meant the very
-  next click dismissed the popup before it could be read. They're now
-  `closeOnBackdrop: false` plus `BossFight.guardAgainstStrayClicks()`, which
-  puts `.modal--input-locked` (a `pointer-events: none` CSS class, see
-  `modal.css`) on the close/confirm controls for 800ms. Any future modal that
-  appears as a *consequence of clicking* wants the same treatment.
-- **`overflow-y: auto` silently clips the *horizontal* axis too.** Per CSS,
-  if one axis is not `visible` the other computes to `auto` rather than
-  staying `visible`. `.column` sets only `overflow-y: auto`, so it clipped
-  sideways as well - and the click effects (the "+N" label, the ripple, the
-  bufo pop) were absolutely positioned children of `.frog-display` inside it,
-  so clicking the right-hand edge of the bufo cut the label in half. They now
-  render into `.click-effect-layer`, a `position: fixed` body-level layer with
-  no clipping ancestor, positioned in viewport coordinates. Anything that
-  needs to visually escape a panel wants that layer, not a `z-index` bump -
-  z-index does nothing against an ancestor's overflow. The flip side is that
-  nothing constrains those effects any more, so `clampToViewport()` in
-  `clickArea.ts` keeps the label on screen on a narrow phone.
-- **`@keyframes` names are global, and the last declaration wins.** `pulse`
-  was defined in three stylesheets at once - `component.css` (scale 1.03),
-  `animations.css` (1.5) and `upgrades.css` (1.1) - so `.purchase-success`,
-  which asked for the 1.03 defined right next to it, actually ran
-  upgrades.css's 1.1 because that file is imported later. Nothing warns about
-  this. `ripple` is still duplicated between `layout.css` and
-  `animations.css`, but with identical values, so it's harmless today. Give
-  new keyframes a component-prefixed name (`purchase-flash`, `boss-timer-
-  pulse`) rather than a generic one.
-- **Purchase feedback must not use `transform`.** `.building-item` sits inside
-  `.buildings-container`, which is `overflow-y: auto`; per the overflow rule
-  above, that makes overflow-x `auto` too. A `transform: scale()` on an item
-  spills past the container's content box, flashes a horizontal scrollbar and
-  - wherever scrollbars take up space instead of overlaying - re-lays-out
-  every row in the shop for the length of the animation, which is what "the
-  shop resizes when you buy" was. `.purchase-success` / `.purchase-error` are
-  now a fading `::after` overlay (background tint + inset ring); colour and
-  box-shadow don't contribute to scrollable overflow, so they can't reflow
-  anything. Any future in-list feedback wants the same shape.
-- **A full-screen fight overlay needs `pointer-events: auto` on itself, not
-  just its children.** `.boss-fight-overlay` used to be `pointer-events: none`
-  with only the sprite/HUD set to `auto` - visually it covered the screen but
-  clicks fell straight through it to the bufo underneath, letting players
-  farm normal click income during a "boss fight." Fixed by making the overlay
-  itself swallow clicks (`pointer-events: auto`); the sprite/HUD still work
-  since their own `auto` takes precedence as descendants.
+  live upgrade effect types.** Anything else is rejected at catalog load
+  (`catalog.rs`) — never a silent no-op that takes currency.
+- **An unrecognised unlock-condition type must be *unmet*, not *met*.**
+  `catalog.rs` rejects unknown condition/effect/requirement/reward types
+  before play starts.
+- **Number formatting forces `en-US` and clamps the mantissa.** `number.rs`
+  ports `formatNumber`/`formatNumberWithPrecision` exactly (K/M/B/T… suffixes,
+  comma grouping, no scientific-notation fallback).
+- **Boss health is scaled, not fixed.** `boss.rs::get_boss_health` multiplies
+  `baseHealth` by the prestige and boss multipliers so the click target stays
+  invariant to prestige. Boss hits count toward click achievements but grant
+  no bufo income (`register_click`).
+- **Prestige (transcend) resets the run but banks boss defeats.** `prestige.rs`
+  folds `defeated` into `lifetime_defeats` and clears the ladder, so the
+  permanent multiplier is never taken back.
+- **Achievements for one-off milestones use custom-event latches.** Beat-this-
+  boss / caught-Golden-Bufo achievements gate on `customEvents` flags
+  (`boss_<id>`, `golden_bufo_caught`), which are one-way and survive a
+  transcend.
+- **Elapsed production:** one-minute floor on reload, no floor on tab return,
+  12-hour cap (`economy.rs::apply_elapsed_production`).
+- **Golden Bufo rewards are transient.** Frenzy multipliers are never saved;
+  `migrate` resets them to 1 on load.
 
-## Things intentionally not done
+## Saves
 
-- **RPG/Explorer mini-game**: `explorerManager.ts`/`models/explorer.ts`/
-  `combat.ts`/`enemies.ts` are a fully-built backend (combat sim, leveling,
-  enemy types including a `Boss` variant, drop tables) with **zero UI**.
-  Superseded by the simpler Clicker Boss mechanic (`src/models/boss.ts` +
-  `bossManager.ts` + `bossFight.ts`) per explicit direction to drop the RPG
-  approach. The backend is still there, just unused - fine to leave, or
-  delete later if it's clearly dead weight.
-- **Export/Import save UI**: backend (`Game.exportSave/importSave`) fully
-  works, no UI button exists. Deprioritized in favor of bosses/prestige/
-  golden bufo.
+- Legacy saves live under `localStorage` key `bufo_idle_save` (a JSON envelope
+  whose nested `state` is authoritative). They are **read-only** and left
+  untouched.
+- New saves are written under `bufo_idle_save_v2` with `schema_version: 2`.
+- A valid v2 save takes precedence; the legacy save is migrated only when v2
+  is absent. A corrupt v2 save is a **recovery state** (writes blocked), never
+  a silent fallback to the legacy key.
+- Reset validates + serializes the fresh v2 state and writes it with one
+  `setItem` **before** committing the in-memory reset; a failed write leaves
+  both keys and the current state unchanged.
+- Export/import uses the existing `btoa(encodeURIComponent(JSON.stringify(...)))`
+  codec; the parser (v2 vs legacy) is selected from `schemaVersion` after
+  decoding (`save.rs::parse_any`).
 
-## Architecture notes for extending this further
+## Content gate
 
-- **Multiplier hook points**: there are exactly two places that combine every
-  multiplier source (upgrades, prestige, boss defeats, golden-bufo frenzy) -
-  `GeneratorManager.recalculateGenerator()` (production) and
-  `calculateDerivedState()` (click power, duplicated in
-  `utils/stateUtils.ts` - the authoritative one used by `StateManager` - and
-  `game/gameState.ts`, kept for API-export parity, both must be edited
-  together). Any new permanent or temporary multiplier should plug into these
-  two spots, not invent a third path.
-- **New top-level state slice pattern** (prestige, bosses): add the interface
-  to `core/types.ts` (`GameState` + `PartialGameState`), a merge branch in
-  `utils/stateUtils.ts` `updateState()` + a mirrored one in
-  `game/gameState.ts` `updateState()`, a default value in both
-  `createDefaultState()` (stateUtils) and `DEFAULT_GAME_STATE` (gameState),
-  and restoration in `game/gameSave.ts` `loadGame()`'s `properState` object
-  (which is hand-built field-by-field, not a spread - easy to forget a slice
-  here). `validateState()` doesn't need updating unless the slice is required
-  for a save to be considered valid.
-- **New manager pattern** (prestige/goldenBufo/boss managers): singleton
-  class with `getInstance()`, own `reset()`, registered in
-  `managers/index.ts` (`initializeManagers`/`resetManagers`), instantiated in
-  `gameCore.ts` alongside the others (start/stop hooks if it needs to pause
-  with the game), and exposed via `debugTools.ts` for console testing.
-- **Testing approach**: no test runner is configured (`npm test` is a stub).
-  Verification is headless-Chrome (Puppeteer) driven through
-  `window.debugTools`, run inside a `node:22-bookworm` container with Chrome
-  deps apt-installed ad hoc, hitting the dev server or `./dist`. No test
-  files are checked into the repo; it's throwaway scratchpad scripting each
-  time. Worth formalizing into a real test setup at some point given how much
-  verification work has taken this shape.
-- **Boss banner dismissal is snoozed, not permanent.** `BossFight` in
-  `src/ui/components/bossFight.ts` has a `snoozedUntil` wall-clock timestamp
-  checked at the top of `refreshBanner()`; clicking "Not yet" sets it to
-  `Date.now() + (60_000 + Math.random()*120_000)`. If you add more banner
-  dismiss actions, route them through the same field rather than a fresh
-  ad hoc flag.
-- **UI init runs before the save loads - don't set DOM state from persisted
-  data in `init()` and expect it to stick.** `initialization.ts`'s sequence
-  is: init managers -> init UI (step 4) -> init game core -> **then** load
-  the save (step 7). `BossFight.init()` used to set
-  `document.body.dataset.bossStage` once from `getDefeatedCount()`, which ran
-  against the fresh default state (0 defeated) - after a reload with
-  defeated bosses, the background silently reverted to stage 0 and never
-  corrected itself. Fixed by moving that read into a `syncBossStage()` method
-  called both from `init()` (best-effort) and every `GAME_TICK` via the
-  existing `refreshBanner()` poll, so it self-corrects within ~100ms of the
-  real save data arriving instead of needing a dedicated "save loaded" event.
-  Any other one-shot `init()`-time read of persisted state should either poll
-  the same way or hook `GAME_STARTED` (emitted after the save load
-  completes), not assume `init()` timing.
-- **Achievements for one-off milestones use custom events, not state reads.**
-  `checkAchievementRequirement` gained `bossesDefeated` / `transcendences` /
-  `prestigePoints`, which read straight from state - fine for thresholds that
-  only ever grow (`bossesDefeated` deliberately sums `defeated.length +
-  lifetimeDefeats` so transcending can't un-earn it). But "beat *this* boss"
-  can't work that way: transcending clears `bosses.defeated`, so the id is
-  gone. Those go through `triggerCustomEvent()`, whose flags are one-way
-  latches that nothing resets - `AchievementManager` listens for
-  `BOSS_DEFEATED` / `GOLDEN_BUFO_COLLECTED` on the bus (listening rather than
-  importing the managers, which would close a cycle through `gameCore`) and
-  latches `boss_<id>` / `golden_bufo_caught`. Any new "did X ever happen"
-  achievement wants a custom event; any "how many X" wants a state field.
-  Note custom-event flags need restoring in `gameSave.loadGame()` via
-  `setCustomEvents()`, for the same init-order reason as `setClickCount()`.
-- **Boss progress is per-run, the boss multiplier is forever.**
-  `state.bosses` has two fields for this: `defeated` (ids beaten in the
-  current prestige run - drives the ladder in `getAvailableBoss()` and the
-  `data-boss-stage` background) and `lifetimeDefeats` (a count banked from
-  previous runs). `getBossMultiplier()` adds both, so `PrestigeManager.
-  transcend()` can fold `defeated` into `lifetimeDefeats` and clear it: the
-  ladder re-opens, the background resets to stage 0, and not one point of
-  earned multiplier is taken back. Anything else that wants to "reset progress
-  but keep the reward" should copy this shape rather than trying to preserve
-  a derived number.
-- **All clicks go through `GameCore.registerClick()`.** It owns
-  `gameCore.clickCount`, `resources.clickCount` and the achievement manager's
-  counter, so the three can't drift. `click()` (the main bufo, which earns
-  bufos) and `BossFight.handleHit()` (boss damage, which doesn't) both call
-  it - boss fights are most of the late-game clicking and used not to count
-  toward the click achievements at all. `AchievementManager`'s `'click'`
-  listener deliberately does *not* increment anything; it used to, on top of
-  `setClickCount()`, which made every counted click worth 1.5 clicks.
-- **A backgrounded tab earns nothing unless you credit it on resume.** Two
-  things stop production when the tab is hidden: `requestAnimationFrame`
-  (which drives `gameLoop`) doesn't fire in a background tab, and
-  `initialization.ts`'s `visibilitychange` handler deliberately calls
-  `getGameCore().stop()` + `getGameLoop().stop()` so a boss countdown can't
-  run while nobody's watching. The pause is correct; losing the income isn't.
-  The hidden branch stamps `gameSettings.lastTick` and the visible branch
-  calls `applyElapsedProduction(lastTick, 0)` before restarting - same
-  function `loadGame()` uses for closed-browser offline progress, just with
-  the one-minute floor dropped, since a 20-second tab switch is still real
-  idle time. `GameLoop.start()` resets its own frame clock, so crediting the
-  gap before restarting can't double-count it.
-- **Timed buffs get a countdown badge; permanent bonuses don't.** Golden
-  Bufo's two frenzy buffs (`frenzyProductionMultiplier`/
-  `frenzyClickMultiplier` in `resources`) are the only *temporary* multiplier
-  sources - everything else (prestige, boss defeats, achievements) is
-  permanent and has no "time left" to show. `GoldenBufoManager` tracks
-  `productionFrenzyEndsAt`/`clickFrenzyEndsAt` wall-clock timestamps and
-  exposes them via `getActiveFrenzies()`; `GoldenBufo` (the UI component)
-  polls that every `GAME_TICK` and renders a `.frenzy-badge` (label +
-  shrinking bar) in the top-right, same polling pattern as the boss HUD
-  timer. If a third timed buff is ever added, extend `getActiveFrenzies()`'s
-  return shape rather than inventing a second indicator.
+The three runtime catalogs (`assets/data/generators.json`, `upgrades.json`,
+`achievements.json`) are fetched and validated **before** the game starts or
+writes a save. A missing/malformed file shows a retry screen — never an empty
+shop. Schema changes require a matching client release; value-only changes
+deploy without a WASM rebuild.
 
-## Mobile
+## Verification
 
-`styles/mobile.css` is the phone/small-tablet layer and **must stay the last
-`@import` in `index.css`** - it relies on source order to win, since most of
-its selectors are single-class and media queries add no specificity. The base
-design is a desktop three-column layout that only ever collapsed to one stack
-at `<=1024px`; nothing else was sized for a phone.
+No browser-test framework is configured. Verification is:
 
-The breakpoint is `max-width: 1024px`, matching the stacking breakpoint in
-`layout.css` - deliberately wide enough to catch landscape phones (844x390)
-and small tablets, which are stacked and touch-driven but wider than a
-portrait phone. A separate `(max-height: 520px) and (orientation: landscape)`
-block un-stickies the bufo and shrinks it, since a sticky 190px bufo eats
-half a landscape phone's screen.
+1. **Native Rust tests** — `cargo test --workspace` (55 tests at cutover)
+   cover every game rule, the save migration, and the number formatting.
+   `cargo fmt --all -- --check` and
+   `cargo clippy --workspace --all-targets -- -D warnings` must be clean.
+2. **Manual browser checklist** — `tests/safari-run-record.md` + synthetic
+   fixtures in `tests/fixtures/`. The owner runs Chrome/Firefox/desktop
+   Safari/iPhone Safari against the production build before merging.
 
-`touch-action: manipulation` is set at every width (not just on mobile) for
-the bufo, boss sprite, golden bufo and buttons. The default `auto` leaves
-double-tap-to-zoom on, which is precisely the gesture rapid-clicking a
-clicker produces, and on some engines it also delays every click ~300ms
-waiting for a possible second tap. `manipulation` kills double-tap zoom while
-leaving pinch zoom alone, so it doesn't cost accessibility the way
-`user-scalable=no` would. Hover styling is neutralised under `(hover: none)`
-because `:hover` latches after a tap on touch devices.
-
-Two traps worth knowing:
-
-- **`.column` has `overflow-y: auto`**, which makes it a scroll container and
-  clips anything sticky or overflowing inside it. The mobile layer sets
-  `overflow: visible !important` there (the columns aren't height-limited on
-  a phone, the page scrolls instead) - that's what lets the bufo be
-  `position: sticky`.
-- **`.buy-button` has `min-width: 120px; flex-shrink: 0`** inside a flex
-  `.generator-row`. Giving it `width: 100%` makes it overlap the generator
-  name rather than fill the row; the row has to `flex-wrap` and the button
-  needs `flex: 1 1 100%` instead.
-
-Verify with headless Chrome at 375/390/412/768 wide and assert, rather than
-eyeballing screenshots: zero elements whose `right` exceeds `clientWidth`,
-zero `button`/`.shop-item`/`.upgrade-item` under 44x44, and that the boss
-sprite/banner/HUD and modals all stay inside the viewport. The page-level
-`scrollWidth` is a *bad* signal on its own - the container clips, so the menu
-bar overflowed to x=436 on a 375px screen (Reset was unreachable) while
-`documentElement.scrollWidth` still read 375.
-
-## Asset provenance
-
-All bufo art (generator/upgrade/boss icons, the click-pop images) comes from
-the "Bufo/Froge" Discord-emote meme set, pulled from
-[knobiknows/all-the-bufo](https://github.com/knobiknows/all-the-bufo) (1700+
-images, same naming convention as the images already in the repo). **That
-repo states no explicit license** ("vetted to be safe for work but use your
-own best judgement"). Same provenance as the project's original ~60 images -
-flagging in case it matters later (e.g. if this ever needs a real
-distribution license). Background photos are properly Unsplash-License (free,
-no attribution required): the pond photo, the nebula/space photo (final boss
-stage), and `swamp.jpg`/`storm.jpg`/`volcano.jpg`/`inferno.jpg` (boss stages
-1-4, one real background-image swap per defeated boss instead of just a CSS
-filter on the pond photo).
-
-## Economy balance pass (generators.json)
-
-Diagnosed by simulating the whole economy in Python (idle-only, "always buy
-whatever has the best production-per-cost right now" greedy strategy, using
-the real cost/production formulas from `generatorManager.ts`/
-`models/generators.ts`), not by inspection alone - the simulator isn't
-checked into the repo (throwaway, same as the Puppeteer scratch scripts).
-Two structural issues showed up:
-
-1. **Payback period (`baseCost / baseProduction`) roughly doubled every
-   generator tier** (100s -> 100s -> 137s -> 255s -> 500s -> ... -> 207,000s
-   at `singularity_bufo`), instead of staying roughly flat like the early
-   tiers do. Each new premium tier was a worse deal than the last, which
-   compounds badly by the time you reach the tiers added this session.
-2. **Two "own 10 of the previous tier" unlock gates dominated their
-   `totalBufos` threshold**: `cosmic_bufo` required `golden_bufo >= 10` and
-   `singularity_bufo` required `omega_bufo >= 10`. At those tiers'
-   `costMultiplier` (1.5-1.85), the cumulative cost of reaching the 10th unit
-   dwarfed the nominal `totalBufos` gate, so the count-gate - not the headline
-   number - was the actual bottleneck.
-
-Fixed by flattening `cosmic_bufo` through `singularity_bufo`'s
-`baseCost`/`baseProduction`/`costMultiplier` so payback grows ~1.55x per tier
-instead of ~2x, and dropping both `>= 10` count-gates to `>= 5`. In
-simulation this took `singularity_bufo`'s unlock time from ~19h50m down to
-~10h39m of optimal play, and shrank the worst late-game dead zone
-(omega -> singularity) from ~8h to ~23min. Did **not** touch tadpole through
-golden_bufo (pre-existing, already paces well, new tier roughly every few
-minutes early on) - the one remaining soft spot is the golden_bufo ->
-cosmic_bufo gap, still ~2h17m in simulation. If this needs another pass,
-re-derive the same way: compute `baseCost/baseProduction` per tier and check
-it's not growing much faster than the tier before it, and check any
-`generators`-type unlock gate's *cumulative* cost (not just its face value)
-against the `totalBufos` gate it's paired with.
-
-## Boss ladder extension (interdimensional_bufo, omniscient_bufo)
-
-The original 5-boss ladder's click-power chain (`stronger_clicks_1` through
-`quantum_click` in `upgrades.json`) tops out at a fixed native
-`clickMultiplier` of 1,125,000 (750,000 from the chain documented in
-`boss.ts` x 1.5 from `ribbit_resonance`) - there are no more click upgrades
-past that point, so bosses gated any further out than `mega_bufo` would be
-either trivial (if easy) or permanently unwinnable (if hard), since the
-player's click power literally cannot grow any further. Added two new
-click upgrades specifically to unstick this: `stronger_clicks_6` (10x,
-gates around the nebula/omega tiers) and `omniscient_clicks` (20x, gates
-after singularity unlocks). If you extend the ladder again, this is the
-pattern: a boss needs *both* a threshold past the previous one *and* a fresh
-click-power upgrade to grind toward, or it isn't a real checkpoint. See the
-balance section below for how HP is derived now - the original hand
-calibration (`clickPower = clickMultiplier x (1 + defeatedCount x 0.25)`,
-`HP = clickPower x 120`) was wrong and has been replaced.
-
-## Boss difficulty: why HP is scaled, not fixed
-
-Boss damage is `resources.clickPower`, which is
-`baseClickPower x clickMultiplier x prestige x bossBonus x clickFrenzy`. The
-original ladder calibrated HP against the click-*upgrade* chain alone, which
-left three multipliers unaccounted for - and one of them, prestige, varies by
-1000x between two players sitting on identical `totalBufos`. The result was
-that a player who had transcended even once one-shot every boss in the game,
-and the ladder was wildly uneven even on a fresh save (`bufo_dragon` needed
-1,672 clicks in a 30-second window while `mega_bufo`, the very next rung, died
-in 2).
-
-No fixed number can fix that, because the difficulty input is a variable the
-number can't see. So `boss.ts` splits it in two:
-
-- `BossDefinition.baseHealth` is the HP for a player with no prestige and no
-  previously-defeated bosses. It's derived, not guessed: the click power
-  expected at that rung (the click-upgrade chain in `upgrades.json` times the
-  achievement `ClickBoost` rewards unlocked by then) multiplied by how many
-  clicks the fight should take.
-- `getBossHealth(boss, state)` multiplies `baseHealth` back up by
-  `prestigeMultiplier x bossMultiplier` at fight time.
-
-Those two multipliers therefore cancel out of `HP / clickPower` exactly, so
-the clicks a fight demands is invariant to prestige - which is the whole
-point. What deliberately stays a real advantage: the click-upgrade chain
-(that *is* the ladder's progression axis - buying the next click upgrade is
-how you beat the next boss), achievement click boosts (baked into
-`baseHealth` at the rung where they're expected, so unlocking them early pays
-off), and Golden Bufo's Click Frenzy, which is not normalised out at all -
-saving a x7 frenzy for a boss is a genuine strategy and the escape hatch for
-players who can't hit the raw click rate.
-
-Targets are set against a real human click rate of **4-8 clicks/sec**, and
-priced for sprite-chasing: `.boss-sprite` hops every `MOVE_INTERVAL_MS`
-(3,000ms) with a 0.4s glide, so ~15% of a 30-second fight goes on reacquiring
-it rather than clicking. That leaves ~25.5 effective seconds, which is what
-the "raw c/s" column below divides by - a target of 165 clicks is a 6.5 c/s
-ask, not 5.5.
-
-| rung | boss | clicks | raw c/s | vs. the 4-8 band |
-|---|---|---|---|---|
-| 1 | furious_froglet | 65 | 2.5 | below - a formality |
-| 2 | the_enraged_bufo | 90 | 3.5 | below |
-| 3 | bufo_dragon | 115 | 4.5 | bottom of band |
-| 4 | bufo_devil | 130 | 5.1 | mid |
-| 5 | mega_bufo | 140 | 5.5 | mid |
-| 6 | interdimensional_bufo | 155 | 6.1 | upper-mid |
-| 7 | omniscient_bufo | 165 | 6.5 | upper-mid |
-
-Nothing on the ladder requires a rate only the top of the band can sustain.
-An earlier pass topped out at 180 clicks, which looked like 6.0 c/s but is
-really 7.1 once the sprite overhead is counted - too close to the ceiling. A
-x7 Click Frenzy drops the final boss to under 1 c/s, which is the intended
-escape hatch rather than an oversight.
-
-Verified in headless Chrome by clicking every rung out at 0 / 100 / 700 /
-5,000 prestige points: each lands within one click of its target, every fight
-is winnable, and the spread across that prestige range is exactly 1.00x.
-Note that headless Chrome does not simulate the sprite chase at all - it
-calls `hit()` directly - so it proves the HP maths, not the ergonomics. The
-efficiency figure above is an estimate and is the thing most worth checking
-against a real player.
-
-Two traps when re-testing this by seeding state directly. Achievement
-`ClickBoost` rewards multiply `resources.clickMultiplier` *at unlock time*, so
-(a) writing `clickMultiplier` yourself wipes whatever the achievements
-contributed and it is never re-applied, making bosses look ~45x too hard, and
-(b) leaving a delay after `setState` lets newly-unlocked achievements
-multiply on top of the value you just seeded, making them look ~2-3x too
-easy. Seed `clickMultiplier` to the *full* expected value (upgrades x
-achievements) and read `clickPower` in the same tick.
-
-If you add a rung, add `baseHealth` the same way: expected click power at that
-rung x a click target continuing the ramp. Don't bake prestige into it.
-
-## Numbers that are first-pass and may need tuning
-
-None of these have been human-playtested, only verified to be *mechanically*
-correct (right math, right event flow, no crashes/errors):
-
-- Boss *thresholds* in `src/models/boss.ts` (which rung unlocks when).
-  Simulated pacing for bosses 1-5 looks good (boss1@~10min, boss2@~2h25m,
-  boss3@~4h29m, boss4@~5h44m, boss5@~8h38m). Bosses 6-7
-  (`interdimensional_bufo` @ 50T totalBufos, `omniscient_bufo` @ 2 quadrillion)
-  cover the late-game stretch after `nebula`/`omega`/`singularity` unlock and
-  are not wall-clock-simulated (that stretch would take many simulated hours).
-  Boss *HP* is no longer a first-pass guess - see the section below.
-- The late upgrade tiers (`<gen>_mastery` / `<gen>_ascendancy` in
-  `upgrades.json`). Every generator used to stop offering upgrades far below
-  the count players actually reach - the last chromatic gate was 25 owned
-  against a reachable ~55, quantum was 5 against ~22 - so buying more of
-  anything eventually stopped unlocking anything.
-  **Gates must come from simulated reachable counts, not from a cost
-  threshold.** The first attempt derived them from "the count at which one
-  more unit costs ~1e13/1e16" and 12 of 28 new upgrades turned out to be
-  permanently unreachable, because a greedy buyer stops pouring bufos into a
-  cheap generator long before its unit cost gets that high. Re-derive by
-  re-running the greedy sim from the economy balance pass above (buy whatever
-  has the best marginal production-per-cost, real cost/production formulas,
-  upgrade multipliers applied as they unlock) with the new tiers *excluded*
-  so it isn't circular, then place mastery near the plateau at ~1e16 lifetime
-  spend and ascendancy near the plateau at ~1e18. Cost is 2x the unit that
-  unlocks it - the median ratio of the pre-existing count-gated upgrades.
-  Current state: every count-gated upgrade in the file unlocks by ~1e19
-  lifetime spend, and nothing is dead content. That sim also caught three
-  *pre-existing* upgrades that were already unreachable
-  (`froglet_boost_4` gated at 150 froglets against a reachable ~118, since
-  lowered to 100); check for those too if you add generators.
-- New generator tier costs/production in `assets/data/generators.json`
-  (`nebula_bufo`/`omega_bufo`/`singularity_bufo`) and their upgrades - see
-  the balance pass above, now flattened but still first-pass/un-playtested.
-- Prestige curve (`prestigePointsFor` in `src/models/prestige.ts`):
-  `floor(sqrt(totalBufos / 1e9))`, +10%/point.
-- Golden Bufo timing/rewards in `src/managers/goldenBufoManager.ts`
-  (spawn interval, frenzy multipliers/durations, Lucky payout formula).
+`tests/parity-matrix.md` maps every player flow to its TS source (pre-port)
+and the Rust test that now pins it.
